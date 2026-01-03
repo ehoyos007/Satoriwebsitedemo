@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check, MapPin, Star, Bot, Search, Megaphone, BarChart3, Palette, Sparkles, Database } from 'lucide-react';
 import {
   Accordion,
   AccordionContent,
@@ -85,7 +85,7 @@ export function PricingPage() {
         'Priority support',
       ],
       cta: 'Book a Call',
-      ctaLink: '#contact',
+      ctaLink: '/book-call',
       highlighted: true,
     },
     {
@@ -103,8 +103,92 @@ export function PricingPage() {
         'Dedicated growth partner',
       ],
       cta: 'Book a Call',
-      ctaLink: '#contact',
+      ctaLink: '/book-call',
       highlighted: false,
+    },
+  ];
+
+  const additionalServices = [
+    {
+      name: 'GBP Optimization',
+      icon: MapPin,
+      setup: '$1,495',
+      monthly: '$197/mo',
+      badge: 'Popular',
+      description: 'Optimize your Google Business Profile for maximum visibility',
+      path: '/services/google-business-profile',
+    },
+    {
+      name: 'Review Screener',
+      icon: Star,
+      setup: '$997',
+      monthly: '$297/mo',
+      badge: 'Recommended',
+      description: 'Automated review funnel to boost your ratings',
+      path: '/services/review-screener',
+    },
+    {
+      name: 'AI Chat Bot',
+      icon: Bot,
+      setup: '$1,497',
+      monthly: '$147/mo',
+      badge: 'AI-Powered',
+      description: 'Capture leads 24/7 with intelligent automation',
+      path: '/services/ai-chat-bot',
+    },
+    {
+      name: 'Local SEO',
+      icon: Search,
+      setup: null,
+      monthly: '$497/mo (6-mo min)',
+      badge: 'Popular',
+      description: 'Rank higher in local search and drive organic traffic',
+      path: '/services/local-seo',
+    },
+    {
+      name: 'Google Ads',
+      icon: Megaphone,
+      setup: '$997',
+      monthly: '$597/mo + ad spend',
+      badge: null,
+      description: 'Immediate visibility through targeted paid campaigns',
+      path: '/services/google-ads',
+    },
+    {
+      name: 'Analytics Dashboards',
+      icon: BarChart3,
+      setup: '$997',
+      monthly: '$97/mo',
+      badge: 'Recommended',
+      description: 'Real-time reporting and data-driven insights',
+      path: '/services/analytics-dashboards',
+    },
+    {
+      name: 'Branding',
+      icon: Palette,
+      setup: '$2,997',
+      monthly: null,
+      badge: null,
+      description: 'Professional brand identity that builds trust',
+      path: '/services/branding',
+    },
+    {
+      name: 'Graphic Design',
+      icon: Sparkles,
+      setup: '$1,297',
+      monthly: null,
+      badge: null,
+      description: 'Marketing materials that convert',
+      path: '/services/graphic-design',
+    },
+    {
+      name: 'Custom CRM',
+      icon: Database,
+      setup: '$4,997',
+      monthly: '$297/mo',
+      badge: 'Enterprise',
+      description: 'Automate follow-ups and close more deals',
+      path: '/services/custom-crm',
     },
   ];
 
@@ -131,8 +215,92 @@ export function PricingPage() {
         </div>
       </section>
 
-      {/* Pricing Tiers */}
+      {/* Core Offering Spotlight */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="relative glass-panel rounded-2xl p-8 md:p-12 border-2 border-cyan-400/30 shadow-2xl shadow-cyan-500/10"
+          >
+            {/* Background gradient */}
+            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-cyan-500/5 via-violet-500/5 to-transparent" />
+
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="px-3 py-1 rounded-full bg-gradient-to-r from-cyan-500/20 to-violet-500/20 border border-cyan-400/30 text-cyan-300 text-sm">
+                  Most Popular
+                </span>
+              </div>
+
+              <h2 className="text-4xl sm:text-5xl mb-4">
+                Website Build —{' '}
+                <span className="bg-gradient-to-r from-cyan-400 to-violet-400 text-transparent bg-clip-text">
+                  $999.95
+                </span>
+              </h2>
+
+              <p className="text-xl text-zinc-300 mb-6">
+                A high-converting 1-page website built to turn visitors into calls, forms, and bookings.
+              </p>
+
+              <div className="grid md:grid-cols-2 gap-4 mb-8">
+                <div className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-1" />
+                  <div>
+                    <div className="text-zinc-200 font-medium">1-page conversion site</div>
+                    <div className="text-sm text-zinc-400">Focused on driving action</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-1" />
+                  <div>
+                    <div className="text-zinc-200 font-medium">Mobile-first design</div>
+                    <div className="text-sm text-zinc-400">Fast-loading, responsive</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-1" />
+                  <div>
+                    <div className="text-zinc-200 font-medium">SEO-ready structure</div>
+                    <div className="text-sm text-zinc-400">Built for visibility</div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-1" />
+                  <div>
+                    <div className="text-zinc-200 font-medium">7-10 day delivery</div>
+                    <div className="text-sm text-zinc-400">Launch-ready quickly</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link
+                  to="/checkout"
+                  className="group relative px-8 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/50"
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    Buy Website — $999.95
+                    <ArrowRight className="w-5 h-5" />
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
+                <a
+                  href="#pricing-tiers"
+                  className="px-8 py-4 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all backdrop-blur-sm text-center"
+                >
+                  See What's Included
+                </a>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Pricing Tiers */}
+      <section id="pricing-tiers" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8">
             {pricingTiers.map((tier, index) => (
@@ -179,12 +347,12 @@ export function PricingPage() {
                   </ul>
 
                   {tier.highlighted ? (
-                    <a
-                      href={tier.ctaLink}
+                    <Link
+                      to={tier.ctaLink}
                       className="block w-full py-4 text-center rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white hover:scale-105 transition-all hover:shadow-lg hover:shadow-cyan-500/50"
                     >
                       {tier.cta}
-                    </a>
+                    </Link>
                   ) : (
                     <Link
                       to={tier.ctaLink}
@@ -290,6 +458,104 @@ export function PricingPage() {
         </div>
       </section>
 
+      {/* Additional Services Grid */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-transparent via-zinc-950/30 to-transparent">
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-4xl sm:text-5xl mb-4">
+              Expand Your{' '}
+              <span className="bg-gradient-to-r from-cyan-400 to-violet-400 text-transparent bg-clip-text">
+                Growth Stack
+              </span>
+            </h2>
+            <p className="text-xl text-zinc-400">
+              Add any service to accelerate your results—mix and match to build the perfect system for your business.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {additionalServices.map((service, index) => {
+              const Icon = service.icon;
+              return (
+                <motion.div
+                  key={service.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <Link
+                    to={service.path}
+                    className="group block h-full glass-panel rounded-xl p-6 border border-white/5 hover:border-cyan-400/30 transition-all hover:scale-105"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="p-3 rounded-lg bg-gradient-to-br from-cyan-500/10 to-violet-500/10 border border-cyan-400/20">
+                        <Icon className="w-6 h-6 text-cyan-400" />
+                      </div>
+                      {service.badge && (
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          service.badge === 'Popular'
+                            ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30'
+                            : service.badge === 'Recommended'
+                            ? 'bg-violet-500/20 text-violet-300 border border-violet-400/30'
+                            : service.badge === 'AI-Powered'
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30'
+                            : 'bg-amber-500/20 text-amber-300 border border-amber-400/30'
+                        }`}>
+                          {service.badge}
+                        </span>
+                      )}
+                    </div>
+
+                    <h3 className="text-xl mb-2 group-hover:text-cyan-400 transition-colors">
+                      {service.name}
+                    </h3>
+
+                    <p className="text-sm text-zinc-400 mb-4 line-clamp-2">
+                      {service.description}
+                    </p>
+
+                    <div className="space-y-1 text-sm">
+                      {service.setup && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-zinc-500">Setup</span>
+                          <span className="text-zinc-300 font-medium">{service.setup}</span>
+                        </div>
+                      )}
+                      {service.monthly && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-zinc-500">Monthly</span>
+                          <span className="text-zinc-300 font-medium">{service.monthly}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t border-zinc-800 flex items-center gap-2 text-sm text-cyan-400 group-hover:gap-3 transition-all">
+                      Learn more
+                      <ArrowRight className="w-4 h-4" />
+                    </div>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center text-zinc-500 mt-12"
+          >
+            All services include setup, training, and ongoing support. Bundle multiple services for custom pricing.
+          </motion.p>
+        </div>
+      </section>
+
       {/* FAQs */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
@@ -370,18 +636,18 @@ export function PricingPage() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                to="/pricing"
+                to="/checkout"
                 className="group relative px-8 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/50"
               >
                 <span className="relative z-10">Buy Website — $999.95</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
-              <a
-                href="#contact"
+              <Link
+                to="/book-call"
                 className="px-8 py-4 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all backdrop-blur-sm"
               >
                 Book a Call
-              </a>
+              </Link>
             </div>
           </motion.div>
         </div>

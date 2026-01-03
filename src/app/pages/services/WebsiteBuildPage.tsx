@@ -556,12 +556,12 @@ export function WebsiteBuildPage() {
               <h3 className="text-2xl mb-2">Growth System</h3>
               <div className="text-4xl mb-4 text-white">$2.5k-$10k</div>
               <p className="text-sm text-zinc-400 mb-6">Website + add-on modules</p>
-              <a
-                href="#contact"
+              <Link
+                to="/book-call"
                 className="block w-full px-6 py-3 rounded-lg border border-white/10 hover:border-cyan-400/30 hover:bg-cyan-500/5 text-white text-center transition-all mb-6"
               >
                 Book a Call
-              </a>
+              </Link>
               <ul className="space-y-2 text-sm text-zinc-300">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />
@@ -587,12 +587,12 @@ export function WebsiteBuildPage() {
               <h3 className="text-2xl mb-2">Scale</h3>
               <div className="text-4xl mb-4 text-white">$10k+</div>
               <p className="text-sm text-zinc-400 mb-6">Custom systems</p>
-              <a
-                href="#contact"
+              <Link
+                to="/book-call"
                 className="block w-full px-6 py-3 rounded-lg border border-white/10 hover:border-cyan-400/30 hover:bg-cyan-500/5 text-white text-center transition-all mb-6"
               >
                 Book a Call
-              </a>
+              </Link>
               <ul className="space-y-2 text-sm text-zinc-300">
                 <li className="flex items-start gap-2">
                   <CheckCircle className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />

@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, LogIn, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import logoImage from '@/assets/6488be8cc330f8095d4c6882810d43cc41e1d87a.png';
 
 export function Navigation() {
@@ -9,7 +9,22 @@ export function Navigation() {
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
-  
+  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleDropdownEnter = () => {
+    if (dropdownTimeoutRef.current) {
+      clearTimeout(dropdownTimeoutRef.current);
+      dropdownTimeoutRef.current = null;
+    }
+    setServicesOpen(true);
+  };
+
+  const handleDropdownLeave = () => {
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setServicesOpen(false);
+    }, 150);
+  };
+
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'Case Studies', path: '/case-studies' },
@@ -68,10 +83,10 @@ export function Navigation() {
             ))}
             
             {/* Services Dropdown */}
-            <div 
+            <div
               className="relative"
-              onMouseEnter={() => setServicesOpen(true)}
-              onMouseLeave={() => setServicesOpen(false)}
+              onMouseEnter={handleDropdownEnter}
+              onMouseLeave={handleDropdownLeave}
             >
               <button
                 className={`relative transition-colors flex items-center gap-1 ${
@@ -137,12 +152,12 @@ export function Navigation() {
               <span className="relative z-10">Buy Website — $999.95</span>
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
-            <a
-              href="/book-call"
+            <Link
+              to="/book-call"
               className="hidden md:block px-5 py-2.5 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all"
             >
               Book a Call
-            </a>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}

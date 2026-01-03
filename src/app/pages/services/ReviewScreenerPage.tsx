@@ -219,8 +219,8 @@ export function ReviewScreenerPage() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <a
-                href="#contact"
+              <Link
+                to="/book-call"
                 className="group relative px-8 py-4 rounded-lg bg-gradient-to-r from-amber-500 to-emerald-500 text-white overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/50"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
@@ -228,7 +228,7 @@ export function ReviewScreenerPage() {
                   <ArrowRight className="w-5 h-5" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </a>
+              </Link>
               <Link
                 to="/case-studies"
                 className="px-8 py-4 rounded-lg border border-zinc-700 hover:border-amber-400/50 hover:bg-amber-500/5 transition-all backdrop-blur-sm text-center"
@@ -338,8 +338,8 @@ export function ReviewScreenerPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="#contact"
+              <Link
+                to="/book-call"
                 className="group relative px-8 py-4 rounded-lg bg-gradient-to-r from-amber-500 to-emerald-500 text-white overflow-hidden transition-all hover:scale-105"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
@@ -347,7 +347,7 @@ export function ReviewScreenerPage() {
                   <ArrowRight className="w-5 h-5" />
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </a>
+              </Link>
               <Link
                 to="/case-studies"
                 className="px-8 py-4 rounded-lg border border-zinc-700 hover:border-amber-400/50 hover:bg-amber-500/5 transition-all text-center"
