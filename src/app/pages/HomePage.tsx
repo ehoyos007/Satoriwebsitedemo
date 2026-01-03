@@ -1,8 +1,8 @@
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChartBar, TrendingUp, Star, MapPin, Phone, Bot, Globe, Zap } from 'lucide-react';
+import { ArrowRight, ChartBar, TrendingUp, Star, MapPin, Phone, Bot, Globe, Zap, Search, Megaphone } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import logoMark from 'figma:asset/1d25c7bfec767bdda7142f41d5290ab7d412db37.png';
+import logoMark from '@/assets/1d25c7bfec767bdda7142f41d5290ab7d412db37.png';
 
 const chartData = [
   { day: 'Day 1', Calls: 12, Forms: 8, Bookings: 5 },
@@ -45,12 +45,12 @@ export function HomePage() {
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
-              <a
-                href="#contact"
+              <Link
+                to="/book-call"
                 className="px-8 py-4 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all backdrop-blur-sm"
               >
                 Book a Call
-              </a>
+              </Link>
             </div>
 
             <div className="flex flex-wrap gap-3 justify-center text-sm">
@@ -319,7 +319,7 @@ export function HomePage() {
             </h2>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {[
               {
                 icon: Globe,
@@ -348,6 +348,20 @@ export function HomePage() {
                 description: 'Answers FAQs, qualifies leads, and routes to call/text/email.',
                 outcome: 'Faster response = more conversions.',
                 gradient: 'from-cyan-500/10 to-transparent',
+              },
+              {
+                icon: Search,
+                title: 'Local SEO + On-Page SEO',
+                description: 'Rank higher in local search results and drive sustainable organic traffic growth.',
+                outcome: 'More visibility, more organic leads.',
+                gradient: 'from-cyan-500/10 to-transparent',
+              },
+              {
+                icon: Megaphone,
+                title: 'Google Ads Management',
+                description: 'Immediate visibility and qualified leads through targeted paid campaigns.',
+                outcome: 'Fast results with measurable ROI.',
+                gradient: 'from-violet-500/10 to-transparent',
               },
             ].map((module, index) => (
               <motion.div
@@ -512,12 +526,12 @@ export function HomePage() {
               <span className="relative z-10">Buy Website — $999.95</span>
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </Link>
-            <a
-              href="#contact"
+            <Link
+              to="/book-call"
               className="px-8 py-4 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all backdrop-blur-sm"
             >
               Book a Call
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -616,12 +630,12 @@ export function HomePage() {
                 <span className="relative z-10">Buy Website — $999.95</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
-              <a
-                href="#contact"
+              <Link
+                to="/book-call"
                 className="px-8 py-4 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all backdrop-blur-sm"
               >
                 Book a Call
-              </a>
+              </Link>
             </div>
           </motion.div>
         </div>

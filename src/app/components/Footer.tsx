@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import logoMark from 'figma:asset/51404eac78630c9ba9d5e3c7ee7ded4c32b0de1b.png';
+import logoMark from '@/assets/51404eac78630c9ba9d5e3c7ee7ded4c32b0de1b.png';
 
 export function Footer() {
   return (
@@ -36,9 +36,9 @@ export function Footer() {
           <div>
             <h3 className="mb-4 text-sm uppercase tracking-wider text-zinc-500">Contact</h3>
             <div className="space-y-2">
-              <a href="#contact" className="block text-zinc-400 hover:text-cyan-400 transition-colors">
+              <Link to="/book-call" className="block text-zinc-400 hover:text-cyan-400 transition-colors">
                 Book a Call
-              </a>
+              </Link>
               <a href="mailto:hello@satoristudios.com" className="block text-zinc-400 hover:text-cyan-400 transition-colors">
                 Email Us
               </a>

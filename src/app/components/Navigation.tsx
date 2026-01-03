@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, LogIn, Menu, X } from 'lucide-react';
 import { useState } from 'react';
-import logoImage from 'figma:asset/6488be8cc330f8095d4c6882810d43cc41e1d87a.png';
+import logoImage from '@/assets/6488be8cc330f8095d4c6882810d43cc41e1d87a.png';
 
 export function Navigation() {
   const location = useLocation();
@@ -20,13 +20,13 @@ export function Navigation() {
     { name: 'Website Build', path: '/services/website-build' },
     { name: 'Google Business Profile', path: '/services/google-business-profile' },
     { name: 'Review Screener', path: '/services/review-screener' },
-    { name: 'AI Chat Bot', path: '/services/ai-chat-bot' },
     { name: 'Local SEO', path: '/services/local-seo' },
     { name: 'Google Ads', path: '/services/google-ads' },
-    { name: 'Analytics & Reporting', path: '/services/analytics-reporting' },
-    { name: 'Branding & Identity', path: '/services/branding-identity' },
-    { name: 'Graphic Design', path: '/services/graphic-design-print' },
-    { name: 'CRM & Automations', path: '/services/crm-automations' },
+    { name: 'Analytics Dashboards', path: '/services/analytics-dashboards' },
+    { name: 'AI Chat Bot', path: '/services/ai-chat-bot' },
+    { name: 'Branding', path: '/services/branding' },
+    { name: 'Graphic Design', path: '/services/graphic-design' },
+    { name: 'Custom CRM', path: '/services/custom-crm' },
   ];
 
   return (

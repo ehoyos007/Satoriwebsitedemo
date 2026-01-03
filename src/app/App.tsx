@@ -7,6 +7,13 @@ import { DesignSystemPage } from './pages/DesignSystemPage';
 import { WebsiteBuildPage } from './pages/services/WebsiteBuildPage';
 import { GoogleBusinessProfilePage } from './pages/services/GoogleBusinessProfilePage';
 import { ReviewScreenerPage } from './pages/services/ReviewScreenerPage';
+import { AIChatBotPage } from './pages/services/AIChatBotPage';
+import { LocalSEOPage } from './pages/services/LocalSEOPage';
+import { GoogleAdsPage } from './pages/services/GoogleAdsPage';
+import { AnalyticsDashboardsPage } from './pages/services/AnalyticsDashboardsPage';
+import { BrandingPage } from './pages/services/BrandingPage';
+import { GraphicDesignPage } from './pages/services/GraphicDesignPage';
+import { CustomCRMPage } from './pages/services/CustomCRMPage';
 import { CheckoutPage } from './pages/checkout/CheckoutPage';
 import { CreateAccountPage } from './pages/checkout/CreateAccountPage';
 import { OnboardingWizard } from './pages/onboarding/OnboardingWizard';
@@ -46,6 +53,13 @@ export default function App() {
             <Route path="/services/website-build" element={<WebsiteBuildPage />} />
             <Route path="/services/google-business-profile" element={<GoogleBusinessProfilePage />} />
             <Route path="/services/review-screener" element={<ReviewScreenerPage />} />
+            <Route path="/services/ai-chat-bot" element={<AIChatBotPage />} />
+            <Route path="/services/local-seo" element={<LocalSEOPage />} />
+            <Route path="/services/google-ads" element={<GoogleAdsPage />} />
+            <Route path="/services/analytics-dashboards" element={<AnalyticsDashboardsPage />} />
+            <Route path="/services/branding" element={<BrandingPage />} />
+            <Route path="/services/graphic-design" element={<GraphicDesignPage />} />
+            <Route path="/services/custom-crm" element={<CustomCRMPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/case-studies" element={<CaseStudiesPage />} />
             <Route path="/design-system" element={<DesignSystemPage />} />
