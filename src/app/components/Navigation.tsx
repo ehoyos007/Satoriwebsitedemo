@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, LogIn, Menu, X } from 'lucide-react';
 import { useState, useRef } from 'react';
-import logoImage from '@/assets/6488be8cc330f8095d4c6882810d43cc41e1d87a.png';
+import logoImage from '@/assets/satori-logo.png';
 
 export function Navigation() {
   const location = useLocation();

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import logoMark from '@/assets/51404eac78630c9ba9d5e3c7ee7ded4c32b0de1b.png';
+import logoImage from '@/assets/satori-logo.png';
 
 export function Footer() {
   return (
@@ -8,7 +8,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <img src={logoMark} alt="Satori Studios" className="h-10 w-auto" />
+              <img src={logoImage} alt="Satori Studios" className="h-10 w-auto" />
             </div>
             <p className="text-zinc-400 max-w-md">
               Satori Studios builds conversion-focused websites and measurable growth systems for SMBs.
