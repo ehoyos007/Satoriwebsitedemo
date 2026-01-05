@@ -115,19 +115,22 @@ export const ${caseStudy.slug?.replace(/-/g, '_')}: CaseStudy = ${JSON.stringify
           <div className="mb-6">
             <span className="text-xs text-cyan-400 uppercase tracking-wider">{caseStudy.industry}</span>
             <h3 className="text-2xl font-bold mt-2">{caseStudy.clientName}</h3>
-            <p className="text-zinc-400 mt-1">{caseStudy.location} • {caseStudy.duration}</p>
+            <p className="text-zinc-400 mt-1">{caseStudy.location}</p>
           </div>
 
           <div className="mb-6">
             <h4 className="text-sm font-medium text-zinc-400 mb-2">Summary</h4>
-            <p className="text-zinc-300">{caseStudy.summary}</p>
+            <p className="text-zinc-300">{caseStudy.summaryHeadline}</p>
           </div>
 
-          <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             {caseStudy.kpis?.slice(0, 4).map((kpi, index) => (
               <div key={index} className="bg-zinc-800/50 rounded-lg p-3 text-center">
                 <div className="text-xl font-bold text-cyan-400">{kpi.value}</div>
                 <div className="text-xs text-zinc-500">{kpi.label}</div>
+                {kpi.delta && (
+                  <div className="text-xs text-emerald-400 mt-1">{kpi.delta}</div>
+                )}
               </div>
             ))}
           </div>
@@ -148,9 +151,9 @@ export const ${caseStudy.slug?.replace(/-/g, '_')}: CaseStudy = ${JSON.stringify
 
           {caseStudy.testimonial && (
             <div className="bg-zinc-800/50 rounded-lg p-4 border-l-4 border-cyan-500">
-              <p className="text-zinc-300 italic mb-2">"{caseStudy.testimonial.quote}"</p>
+              <p className="text-zinc-300 italic mb-2">"{caseStudy.testimonial.text}"</p>
               <p className="text-sm text-zinc-500">
-                — {caseStudy.testimonial.author}, {caseStudy.testimonial.role}
+                — {caseStudy.testimonial.name}, {caseStudy.testimonial.title}
               </p>
             </div>
           )}

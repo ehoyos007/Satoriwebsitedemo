@@ -1,25 +1,67 @@
-import { Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Minus, ChevronDown, ChevronUp, Monitor, Smartphone, Image, RefreshCw, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import type { WizardState } from '../CaseStudyWizard';
+import type { WizardState, ScreenshotData } from '../CaseStudyWizard';
 import type { CaseStudy, KPI, TimelineItem } from '@/app/data/caseStudies';
+import { captureScreenshot, generateThumbnail } from '@/app/lib/screenshot-api';
 
 interface ReviewStepProps {
   state: WizardState;
   dispatch: React.Dispatch<{
     type: string;
-    updates?: Partial<CaseStudy>;
+    updates?: Partial<CaseStudy> | Partial<ScreenshotData>;
     index?: number;
     kpi?: KPI;
     timeline?: TimelineItem;
     value?: string;
+    screenshots?: ScreenshotData;
   }>;
 }
 
 export function ReviewStep({ state, dispatch }: ReviewStepProps) {
-  const { caseStudy } = state;
+  const { caseStudy, screenshots, inputData } = state;
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(['basic', 'content', 'kpis'])
+    new Set(['basic', 'content', 'kpis', 'screenshots'])
   );
+  const [retakingDesktop, setRetakingDesktop] = useState(false);
+  const [retakingMobile, setRetakingMobile] = useState(false);
+
+  const handleRetakeScreenshot = async (type: 'desktop' | 'mobile') => {
+    if (type === 'desktop') {
+      setRetakingDesktop(true);
+    } else {
+      setRetakingMobile(true);
+    }
+
+    try {
+      const result = await captureScreenshot({
+        url: inputData.clientUrl,
+        viewportWidth: type === 'desktop' ? 1280 : 375,
+        viewportHeight: type === 'desktop' ? 800 : 667,
+        format: 'png',
+      });
+
+      if (result.success && result.imageUrl) {
+        const updates: Partial<ScreenshotData> = { [type]: result.imageUrl };
+
+        // Regenerate thumbnail if desktop was retaken
+        if (type === 'desktop') {
+          try {
+            updates.thumbnail = await generateThumbnail(result.imageUrl, 600);
+          } catch {
+            updates.thumbnail = result.imageUrl;
+          }
+        }
+
+        dispatch({ type: 'UPDATE_SCREENSHOTS', updates });
+      }
+    } finally {
+      if (type === 'desktop') {
+        setRetakingDesktop(false);
+      } else {
+        setRetakingMobile(false);
+      }
+    }
+  };
 
   const toggleSection = (section: string) => {
     const newExpanded = new Set(expandedSections);
@@ -385,6 +427,102 @@ export function ReviewStep({ state, dispatch }: ReviewStepProps) {
             />
           </div>
         </div>
+      </SectionHeader>
+
+      {/* Screenshots */}
+      <SectionHeader id="screenshots" title="Screenshots">
+        {screenshots?.skipped ? (
+          <div className="text-center py-4">
+            <div className="w-12 h-12 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center mx-auto mb-3">
+              <Image className="w-6 h-6 text-zinc-500" />
+            </div>
+            <p className="text-zinc-500 text-sm mb-3">Screenshots were skipped during capture</p>
+            <p className="text-zinc-600 text-xs">You'll need to manually add image URLs when exporting</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Desktop Screenshot */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Monitor className="w-4 h-4 text-zinc-400" />
+                    <span className="text-sm font-medium">Desktop</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRetakeScreenshot('desktop')}
+                    disabled={retakingDesktop}
+                    className="flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 disabled:opacity-50"
+                  >
+                    {retakingDesktop ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3 h-3" />
+                    )}
+                    Retake
+                  </button>
+                </div>
+                {screenshots?.desktop ? (
+                  <div className="aspect-video bg-zinc-900 rounded-lg overflow-hidden border border-white/10">
+                    <img
+                      src={screenshots.desktop}
+                      alt="Desktop preview"
+                      className="w-full h-full object-cover object-top"
+                    />
+                  </div>
+                ) : (
+                  <div className="aspect-video bg-zinc-900/50 rounded-lg border border-dashed border-white/10 flex items-center justify-center">
+                    <span className="text-zinc-500 text-sm">No desktop screenshot</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Mobile Screenshot */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Smartphone className="w-4 h-4 text-zinc-400" />
+                    <span className="text-sm font-medium">Mobile</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRetakeScreenshot('mobile')}
+                    disabled={retakingMobile}
+                    className="flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300 disabled:opacity-50"
+                  >
+                    {retakingMobile ? (
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3 h-3" />
+                    )}
+                    Retake
+                  </button>
+                </div>
+                {screenshots?.mobile ? (
+                  <div className="aspect-[9/16] max-h-[250px] bg-zinc-900 rounded-lg overflow-hidden border border-white/10 mx-auto">
+                    <img
+                      src={screenshots.mobile}
+                      alt="Mobile preview"
+                      className="w-full h-full object-cover object-top"
+                    />
+                  </div>
+                ) : (
+                  <div className="aspect-[9/16] max-h-[250px] bg-zinc-900/50 rounded-lg border border-dashed border-white/10 flex items-center justify-center mx-auto">
+                    <span className="text-zinc-500 text-sm">No mobile screenshot</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Info note */}
+            <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-400/20">
+              <p className="text-xs text-zinc-400">
+                <span className="text-amber-400 font-medium">Note:</span> Screenshots are stored as base64 data. When exporting, upload images to a hosting service (Cloudinary, Unsplash, etc.) and update the URLs.
+              </p>
+            </div>
+          </div>
+        )}
       </SectionHeader>
     </div>
   );

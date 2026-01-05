@@ -3,6 +3,7 @@ import {
   ArrowRight,
   ArrowLeft,
   FileText,
+  Camera,
   Sparkles,
   Edit3,
   Download,
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useReducer, useState } from 'react';
 import { InputStep } from './components/InputStep';
+import { ScreenshotStep } from './components/ScreenshotStep';
 import { GenerationStep } from './components/GenerationStep';
 import { ReviewStep } from './components/ReviewStep';
 import { ExportStep } from './components/ExportStep';
@@ -30,9 +32,19 @@ export interface ClientInput {
   afterMetrics: { label: string; value: string }[];
 }
 
+export interface ScreenshotData {
+  desktop?: string;
+  mobile?: string;
+  thumbnail?: string;
+  desktopError?: string;
+  mobileError?: string;
+  skipped?: boolean;
+}
+
 export interface WizardState {
   currentStep: number;
   inputData: ClientInput;
+  screenshots: ScreenshotData;
   isGenerating: boolean;
   generationPhase: string | null;
   generationError: string | null;
@@ -65,6 +77,8 @@ type WizardAction =
   | { type: 'UPDATE_TOOL'; index: number; value: string }
   | { type: 'ADD_TOOL' }
   | { type: 'REMOVE_TOOL'; index: number }
+  | { type: 'SET_SCREENSHOTS'; screenshots: ScreenshotData }
+  | { type: 'UPDATE_SCREENSHOTS'; updates: Partial<ScreenshotData> }
   | { type: 'NEXT_STEP' }
   | { type: 'PREV_STEP' }
   | { type: 'AUTHENTICATE' }
@@ -84,6 +98,7 @@ const initialState: WizardState = {
     beforeMetrics: [{ label: '', value: '' }],
     afterMetrics: [{ label: '', value: '' }],
   },
+  screenshots: {},
   isGenerating: false,
   generationPhase: null,
   generationError: null,
@@ -159,7 +174,7 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
         isGenerating: false,
         generationPhase: null,
         caseStudy: action.caseStudy,
-        currentStep: 3,
+        currentStep: 4,
       };
     case 'GENERATION_ERROR':
       return {
@@ -265,8 +280,18 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
         caseStudy: { ...state.caseStudy, tools: newTools },
       };
     }
+    case 'SET_SCREENSHOTS':
+      return {
+        ...state,
+        screenshots: action.screenshots,
+      };
+    case 'UPDATE_SCREENSHOTS':
+      return {
+        ...state,
+        screenshots: { ...state.screenshots, ...action.updates },
+      };
     case 'NEXT_STEP':
-      return { ...state, currentStep: Math.min(state.currentStep + 1, 4) };
+      return { ...state, currentStep: Math.min(state.currentStep + 1, 5) };
     case 'PREV_STEP':
       return { ...state, currentStep: Math.max(state.currentStep - 1, 1) };
     case 'AUTHENTICATE':
@@ -280,9 +305,10 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
 
 const steps = [
   { number: 1, title: 'Client Input', icon: FileText },
-  { number: 2, title: 'AI Generation', icon: Sparkles },
-  { number: 3, title: 'Review & Edit', icon: Edit3 },
-  { number: 4, title: 'Export', icon: Download },
+  { number: 2, title: 'Screenshots', icon: Camera },
+  { number: 3, title: 'AI Generation', icon: Sparkles },
+  { number: 4, title: 'Review & Edit', icon: Edit3 },
+  { number: 5, title: 'Export', icon: Download },
 ];
 
 export function CaseStudyWizard() {
@@ -290,7 +316,7 @@ export function CaseStudyWizard() {
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
-  const totalSteps = 4;
+  const totalSteps = 5;
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -323,6 +349,11 @@ export function CaseStudyWizard() {
       return clientUrl && clientName && (industry || state.inputData.customIndustry) && location && services.length > 0;
     }
     if (state.currentStep === 2) {
+      // Can proceed from screenshots if we have at least one screenshot or skipped
+      return state.screenshots.desktop || state.screenshots.mobile || state.screenshots.skipped;
+    }
+    if (state.currentStep === 3) {
+      // Can proceed from generation if we have a case study
       return !state.isGenerating && Object.keys(state.caseStudy).length > 0;
     }
     return true;
@@ -433,12 +464,15 @@ export function CaseStudyWizard() {
               <InputStep state={state} dispatch={dispatch} />
             )}
             {state.currentStep === 2 && (
-              <GenerationStep state={state} dispatch={dispatch} />
+              <ScreenshotStep state={state} dispatch={dispatch} />
             )}
             {state.currentStep === 3 && (
-              <ReviewStep state={state} dispatch={dispatch} />
+              <GenerationStep state={state} dispatch={dispatch} />
             )}
             {state.currentStep === 4 && (
+              <ReviewStep state={state} dispatch={dispatch} />
+            )}
+            {state.currentStep === 5 && (
               <ExportStep state={state} dispatch={dispatch} />
             )}
           </motion.div>
@@ -455,21 +489,22 @@ export function CaseStudyWizard() {
             Back
           </button>
 
-          {state.currentStep < 4 && (
+          {state.currentStep < 5 && (
             <button
               onClick={handleNext}
               disabled={!canProceed() || state.isGenerating}
               className="group relative px-8 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               <span className="relative z-10 flex items-center gap-2">
-                {state.currentStep === 1 ? 'Generate Case Study' : 'Next Step'}
+                {state.currentStep === 1 ? 'Capture Screenshots' :
+                 state.currentStep === 2 ? 'Generate Case Study' : 'Next Step'}
                 <ArrowRight className="w-5 h-5" />
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />
             </button>
           )}
 
-          {state.currentStep === 4 && (
+          {state.currentStep === 5 && (
             <button
               onClick={() => dispatch({ type: 'RESET' })}
               className="flex items-center gap-2 px-6 py-3 rounded-lg border border-cyan-400/50 text-cyan-400 hover:bg-cyan-500/10 transition-all"
