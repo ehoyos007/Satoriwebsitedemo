@@ -1,7 +1,7 @@
 
-  # Global Copy for Website (Copy)
+  # Satori Studios
 
-  This is a code bundle for Global Copy for Website (Copy). The original project is available at https://www.figma.com/design/jnB0peHi261citNA6scOXG/Global-Copy-for-Website--Copy-.
+  This is a code bundle for Satori Studios. The original project is available at https://www.figma.com/design/jnB0peHi261citNA6scOXG/Global-Copy-for-Website--Copy-.
 
   ## Running the code
 
