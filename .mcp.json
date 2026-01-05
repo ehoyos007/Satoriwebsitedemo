@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "supabase-projects": {
+      "type": "sse",
+      "url": "https://firsthealthenrollment.app.n8n.cloud/mcp/supabase-project-manager"
+    }
+  }
+}
