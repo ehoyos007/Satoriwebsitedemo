@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-
-const STORAGE_KEY = 'satori-project-tracker-progress';
+import { useState } from 'react';
+import { useProgress } from './hooks/useProgress';
 
 // Default completed tasks based on current project state (as of project review)
 // Format: "phaseIndex-taskIndex-subtaskIndex": true
@@ -142,30 +141,20 @@ interface Phase {
 
 export default function App() {
   const [expandedPhases, setExpandedPhases] = useState<Record<number, boolean>>({0: true, 1: false, 2: false, 3: false, 4: false});
-  const [completedTasks, setCompletedTasks] = useState<Record<string, boolean>>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        // Merge saved data with defaults (saved takes precedence)
-        return { ...DEFAULT_COMPLETED_TASKS, ...JSON.parse(saved) };
-      }
-      return { ...DEFAULT_COMPLETED_TASKS };
-    }
-    return { ...DEFAULT_COMPLETED_TASKS };
-  });
-  const [lastSaved, setLastSaved] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(completedTasks));
-      setLastSaved(new Date().toLocaleTimeString());
-    }
-  }, [completedTasks]);
+  // Use Supabase-enabled progress hook (falls back to localStorage)
+  const {
+    completedTasks,
+    toggleTask: toggleTaskByKey,
+    resetProgress: resetProgressFn,
+    isLoading: _isLoading,
+    lastSaved,
+    syncStatus,
+  } = useProgress(DEFAULT_COMPLETED_TASKS);
 
-  const resetProgress = () => {
+  const handleResetProgress = () => {
     if (window.confirm('Are you sure you want to reset all progress? This will reset to the baseline (already completed tasks will remain checked).')) {
-      setCompletedTasks({ ...DEFAULT_COMPLETED_TASKS });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_COMPLETED_TASKS));
+      resetProgressFn({ ...DEFAULT_COMPLETED_TASKS });
     }
   };
 
@@ -177,7 +166,7 @@ export default function App() {
     const key = subtaskIndex !== null
       ? `${phaseIndex}-${taskIndex}-${subtaskIndex}`
       : `${phaseIndex}-${taskIndex}`;
-    setCompletedTasks(prev => ({...prev, [key]: !prev[key]}));
+    toggleTaskByKey(key);
   };
 
   const isTaskComplete = (phaseIndex: number, taskIndex: number, subtaskIndex: number | null = null) => {
@@ -842,13 +831,21 @@ export default function App() {
           {/* Save indicator and reset */}
           <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-700/50">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <div className={`w-2 h-2 rounded-full ${
+                syncStatus === 'cloud' ? 'bg-emerald-500' :
+                syncStatus === 'syncing' ? 'bg-amber-500 animate-pulse' :
+                syncStatus === 'error' ? 'bg-red-500' :
+                'bg-slate-500'
+              }`} />
               <span className="text-slate-500 text-sm">
-                {lastSaved ? `Auto-saved at ${lastSaved}` : 'Progress saves automatically'}
+                {syncStatus === 'cloud' && lastSaved ? `Synced to cloud at ${lastSaved}` :
+                 syncStatus === 'syncing' ? 'Syncing...' :
+                 syncStatus === 'error' ? 'Sync error - saved locally' :
+                 lastSaved ? `Saved locally at ${lastSaved}` : 'Progress saves automatically'}
               </span>
             </div>
             <button
-              onClick={resetProgress}
+              onClick={handleResetProgress}
               className="text-sm text-red-400 hover:text-red-300 transition-colors px-3 py-1 rounded hover:bg-red-500/10"
             >
               Reset Progress

@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import { services, getTotalSetup, getTotalMonthly, getYear1LTV, getYear2LTV } from './data/services';
-import { useLocalStorage } from './hooks/useLocalStorage';
-import { Service, TabId, ServiceNote } from './types';
-
-const NOTES_KEY = 'satori-services-notes';
-const FAVORITES_KEY = 'satori-services-favorites';
+import { useSupabaseNotes } from './hooks/useSupabaseNotes';
+import { useSupabaseFavorites } from './hooks/useSupabaseFavorites';
+import { TabId } from './types';
 
 export default function App() {
   const [activeServiceIndex, setActiveServiceIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterBadge, setFilterBadge] = useState<string | null>(null);
-  const [notes, setNotes] = useLocalStorage<Record<string, string>>(NOTES_KEY, {});
-  const [favorites, setFavorites] = useLocalStorage<string[]>(FAVORITES_KEY, []);
   const [showCalculator, setShowCalculator] = useState(false);
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+
+  // Use Supabase-enabled hooks (fall back to localStorage)
+  const { notes, setNote, syncStatus: notesSyncStatus } = useSupabaseNotes();
+  const { favorites, toggleFavorite } = useSupabaseFavorites();
 
   const currentService = services[activeServiceIndex];
 
@@ -35,16 +35,8 @@ export default function App() {
 
   const badges = ['Popular', 'Recommended', 'AI-Powered', 'Enterprise'];
 
-  const toggleFavorite = (serviceId: string) => {
-    setFavorites(prev =>
-      prev.includes(serviceId)
-        ? prev.filter(id => id !== serviceId)
-        : [...prev, serviceId]
-    );
-  };
-
   const updateNote = (serviceId: string, content: string) => {
-    setNotes(prev => ({ ...prev, [serviceId]: content }));
+    setNote(serviceId, content);
   };
 
   const toggleServiceSelection = (serviceId: string) => {
@@ -194,7 +186,7 @@ export default function App() {
               {/* Services List */}
               <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">Services ({filteredServices.length})</h2>
               <nav className="space-y-1 max-h-[60vh] overflow-y-auto">
-                {filteredServices.map((service, idx) => {
+                {filteredServices.map((service) => {
                   const actualIndex = services.findIndex(s => s.id === service.id);
                   return (
                     <button
@@ -479,7 +471,7 @@ export default function App() {
               {/* Notes Tab */}
               {activeTab === 'notes' && (
                 <div className="space-y-4">
-                  <p className="text-slate-400">Personal notes for this service. Saved automatically to your browser.</p>
+                  <p className="text-slate-400">Personal notes for this service. Saved automatically{notesSyncStatus === 'cloud' ? ' to cloud' : ' to browser'}.</p>
                   <textarea
                     value={notes[currentService.id] || ''}
                     onChange={(e) => updateNote(currentService.id, e.target.value)}
@@ -487,8 +479,16 @@ export default function App() {
                     className="w-full h-64 px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 resize-none"
                   />
                   <div className="flex items-center gap-2 text-sm text-slate-500">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    Auto-saved to localStorage
+                    <div className={`w-2 h-2 rounded-full ${
+                      notesSyncStatus === 'cloud' ? 'bg-emerald-500' :
+                      notesSyncStatus === 'syncing' ? 'bg-amber-500 animate-pulse' :
+                      notesSyncStatus === 'error' ? 'bg-red-500' :
+                      'bg-slate-500'
+                    }`}></div>
+                    {notesSyncStatus === 'cloud' ? 'Synced to cloud' :
+                     notesSyncStatus === 'syncing' ? 'Syncing...' :
+                     notesSyncStatus === 'error' ? 'Sync error - saved locally' :
+                     'Saved locally'}
                   </div>
                 </div>
               )}
