@@ -23,6 +23,8 @@ import { BookCallPage } from './pages/booking/BookCallPage';
 import { ScheduleCallPage } from './pages/booking/ScheduleCallPage';
 import { BookingConfirmation } from './pages/booking/BookingConfirmation';
 import { LoginPage } from './pages/LoginPage';
+import { CaseStudyWizard } from './pages/admin/CaseStudyWizard';
+import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
 import { AnimatedGalaxyBackground } from './components/AnimatedGalaxyBackground';
@@ -82,6 +84,10 @@ export default function App() {
             <Route path="/book-call" element={<BookCallPage />} />
             <Route path="/booking/schedule" element={<ScheduleCallPage />} />
             <Route path="/booking/confirmation" element={<BookingConfirmation />} />
+
+            {/* Admin Tools */}
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/case-study-wizard" element={<CaseStudyWizard />} />
           </Routes>
           <Footer />
         </div>
