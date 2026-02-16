@@ -17,6 +17,7 @@ import { BrandingPage } from './pages/services/BrandingPage';
 import { GraphicDesignPage } from './pages/services/GraphicDesignPage';
 import { CustomCRMPage } from './pages/services/CustomCRMPage';
 import { CheckoutPage } from './pages/checkout/CheckoutPage';
+import { CheckoutSuccessPage } from './pages/checkout/CheckoutSuccessPage';
 import { CreateAccountPage } from './pages/checkout/CreateAccountPage';
 import { OnboardingWizard } from './pages/onboarding/OnboardingWizard';
 import { OnboardingSuccess } from './pages/onboarding/OnboardingSuccess';
@@ -80,6 +81,7 @@ export default function App() {
 
               {/* Checkout Flow */}
               <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
               <Route path="/checkout/create-account" element={<CreateAccountPage />} />
 
               {/* Onboarding Flow (protected) */}

@@ -1,18 +1,128 @@
 import { motion } from 'motion/react';
-import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle, Lock, Clock, Shield, ArrowRight, Tag } from 'lucide-react';
-import { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { CheckCircle, Lock, Clock, Shield, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { loadStripe } from '@stripe/stripe-js';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
+interface ServiceData {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  setup_price_cents: number | null;
+  monthly_price_cents: number | null;
+  stripe_setup_price_id: string | null;
+  stripe_monthly_price_id: string | null;
+  features: string[];
+}
 
 export function CheckoutPage() {
-  const navigate = useNavigate();
-  const [promoCode, setPromoCode] = useState('');
-  const [promoApplied, setPromoApplied] = useState(false);
+  const [searchParams] = useSearchParams();
+  const serviceSlug = searchParams.get('service') || 'website-build';
+  const { user } = useAuth();
 
-  const handlePayment = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Navigate to account creation
-    navigate('/checkout/create-account');
+  const [service, setService] = useState<ServiceData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch service from Supabase
+  useEffect(() => {
+    async function fetchService() {
+      setLoading(true);
+      setError(null);
+      const { data, error: fetchError } = await supabase
+        .from('services')
+        .select('*')
+        .eq('slug', serviceSlug)
+        .single();
+
+      if (fetchError || !data) {
+        setError('Service not found. Please try again.');
+        setLoading(false);
+        return;
+      }
+
+      setService(data as ServiceData);
+      setLoading(false);
+    }
+    fetchService();
+  }, [serviceSlug]);
+
+  const handleCheckout = async (priceType: 'setup' | 'monthly') => {
+    if (!service) return;
+
+    const priceId = priceType === 'setup'
+      ? service.stripe_setup_price_id
+      : service.stripe_monthly_price_id;
+
+    if (!priceId) {
+      setError('This pricing option is not yet available.');
+      return;
+    }
+
+    setCheckoutLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          priceId,
+          serviceSlug: service.slug,
+          serviceName: service.name,
+          customerEmail: user?.email || undefined,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setCheckoutLoading(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pt-16 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+      </div>
+    );
+  }
+
+  if (!service) {
+    return (
+      <div className="min-h-screen pt-16 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+          <h2 className="text-2xl mb-2">Service Not Found</h2>
+          <p className="text-zinc-400 mb-6">{error || 'The service you selected could not be found.'}</p>
+          <Link to="/pricing" className="text-cyan-400 hover:text-cyan-300">
+            View all services
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const setupPrice = service.setup_price_cents ? (service.setup_price_cents / 100) : null;
+  const monthlyPrice = service.monthly_price_cents ? (service.monthly_price_cents / 100) : null;
+  const hasSetup = setupPrice !== null && service.stripe_setup_price_id;
+  const hasMonthly = monthlyPrice !== null && service.stripe_monthly_price_id;
 
   return (
     <div className="min-h-screen pt-16">
@@ -22,192 +132,126 @@ export function CheckoutPage() {
           <h1 className="text-4xl sm:text-5xl mb-4">
             Complete Your{' '}
             <span className="bg-gradient-to-r from-cyan-400 to-violet-400 text-transparent bg-clip-text">
-              Website Purchase
+              Purchase
             </span>
           </h1>
-          <p className="text-xl text-zinc-400">Launch your conversion-optimized website in 7-14 days</p>
+          <p className="text-xl text-zinc-400">Secure checkout powered by Stripe</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left: Checkout Form */}
-          <div className="lg:col-span-2">
-            <form onSubmit={handlePayment} className="space-y-6">
-              {/* Payment Method */}
-              <div className="glass-panel p-8 rounded-2xl border border-white/10">
-                <h2 className="text-2xl mb-6 flex items-center gap-2">
-                  <Lock className="w-6 h-6 text-cyan-400" />
-                  Secure Payment
-                </h2>
+          {/* Left: Pricing Options */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Service Info */}
+            <div className="glass-panel p-8 rounded-2xl border border-white/10">
+              <h2 className="text-2xl mb-2">{service.name}</h2>
+              <p className="text-zinc-400 mb-6">{service.description}</p>
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm text-zinc-400 mb-2">Card Number</label>
-                    <input
-                      type="text"
-                      placeholder="1234 5678 9012 3456"
-                      className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                      required
-                    />
-                  </div>
+              {/* Features */}
+              <ul className="space-y-2">
+                {service.features.map((feature, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-zinc-300">
+                    <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+            {/* Payment Options */}
+            <div className="space-y-4">
+              {hasSetup && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="glass-panel p-6 rounded-2xl border border-white/10 hover:border-cyan-400/30 transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-4">
                     <div>
-                      <label className="block text-sm text-zinc-400 mb-2">Expiry Date</label>
-                      <input
-                        type="text"
-                        placeholder="MM/YY"
-                        className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                        required
-                      />
+                      <h3 className="text-lg">
+                        {monthlyPrice ? 'Setup Fee' : 'One-Time Payment'}
+                      </h3>
+                      <p className="text-sm text-zinc-400">
+                        {monthlyPrice ? 'One-time setup fee to get started' : 'Full payment for this service'}
+                      </p>
                     </div>
-                    <div>
-                      <label className="block text-sm text-zinc-400 mb-2">CVC</label>
-                      <input
-                        type="text"
-                        placeholder="123"
-                        className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                        required
-                      />
+                    <div className="text-right">
+                      <div className="text-3xl font-light">
+                        <span className="bg-gradient-to-r from-cyan-400 to-violet-400 text-transparent bg-clip-text">
+                          ${setupPrice?.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-500">one-time</p>
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-zinc-400 mb-2">Name on Card</label>
-                    <input
-                      type="text"
-                      placeholder="John Smith"
-                      className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Billing Info */}
-              <div className="glass-panel p-8 rounded-2xl border border-white/10">
-                <h2 className="text-2xl mb-6">Billing Information</h2>
-
-                <div className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm text-zinc-400 mb-2">First Name</label>
-                      <input
-                        type="text"
-                        className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-zinc-400 mb-2">Last Name</label>
-                      <input
-                        type="text"
-                        className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-zinc-400 mb-2">Email</label>
-                    <input
-                      type="email"
-                      className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-zinc-400 mb-2">Phone</label>
-                    <input
-                      type="tel"
-                      className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-zinc-400 mb-2">Address</label>
-                    <input
-                      type="text"
-                      className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                      required
-                    />
-                  </div>
-
-                  <div className="grid sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm text-zinc-400 mb-2">City</label>
-                      <input
-                        type="text"
-                        className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-zinc-400 mb-2">State</label>
-                      <input
-                        type="text"
-                        className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm text-zinc-400 mb-2">ZIP</label>
-                      <input
-                        type="text"
-                        className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Promo Code */}
-              <div className="glass-panel p-6 rounded-xl border border-white/10">
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                      placeholder="Enter promo code"
-                      className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                    />
                   </div>
                   <button
-                    type="button"
-                    onClick={() => setPromoApplied(true)}
-                    className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 border border-white/10 rounded-lg transition-colors"
+                    onClick={() => handleCheckout('setup')}
+                    disabled={checkoutLoading}
+                    className="w-full group relative px-6 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-cyan-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   >
-                    Apply
+                    <span className="relative z-10 flex items-center justify-center gap-2">
+                      {checkoutLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <>
+                          <Lock className="w-4 h-4" />
+                          Pay ${setupPrice?.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
-                </div>
-                {promoApplied && (
-                  <div className="mt-3 flex items-center gap-2 text-emerald-400 text-sm">
-                    <CheckCircle className="w-4 h-4" />
-                    Promo code applied: LAUNCH10 (-$100)
+                </motion.div>
+              )}
+
+              {hasMonthly && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="glass-panel p-6 rounded-2xl border border-white/10 hover:border-violet-400/30 transition-colors"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg">Monthly Subscription</h3>
+                      <p className="text-sm text-zinc-400">Ongoing monthly service</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-light">
+                        <span className="bg-gradient-to-r from-violet-400 to-cyan-400 text-transparent bg-clip-text">
+                          ${monthlyPrice?.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-500">per month</p>
+                    </div>
                   </div>
-                )}
+                  <button
+                    onClick={() => handleCheckout('monthly')}
+                    disabled={checkoutLoading}
+                    className="w-full group relative px-6 py-3 rounded-lg border border-violet-500/50 text-white overflow-hidden transition-all hover:scale-[1.02] hover:shadow-lg hover:shadow-violet-500/20 hover:border-violet-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                  >
+                    <span className="relative z-10 flex items-center justify-center gap-2">
+                      {checkoutLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <>
+                          <Lock className="w-4 h-4" />
+                          Subscribe — ${monthlyPrice?.toLocaleString('en-US', { minimumFractionDigits: 2 })}/mo
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </span>
+                  </button>
+                </motion.div>
+              )}
+            </div>
+
+            {error && (
+              <div className="flex items-center gap-2 text-red-400 text-sm p-4 rounded-lg bg-red-500/10 border border-red-500/20">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                {error}
               </div>
-
-              {/* Submit */}
-              <button
-                type="submit"
-                className="w-full group relative px-8 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-cyan-500/50"
-              >
-                <span className="relative z-10 flex items-center justify-center gap-2 text-lg">
-                  <Lock className="w-5 h-5" />
-                  Complete Payment — ${promoApplied ? '899.95' : '999.95'}
-                  <ArrowRight className="w-5 h-5" />
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </button>
-
-              <p className="text-center text-sm text-zinc-500">
-                By completing this purchase, you agree to our Terms of Service and Privacy Policy
-              </p>
-            </form>
+            )}
           </div>
 
           {/* Right: Order Summary */}
@@ -215,57 +259,28 @@ export function CheckoutPage() {
             <div className="glass-panel p-8 rounded-2xl border border-white/10 sticky top-24">
               <h2 className="text-2xl mb-6">Order Summary</h2>
 
-              <div className="space-y-6 mb-6">
-                <div>
-                  <h3 className="mb-3 flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-cyan-400" />
-                    Website Build Package
-                  </h3>
-                  <ul className="space-y-2 text-sm text-zinc-400 ml-4">
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                      Conversion-optimized single-page site
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                      Mobile-first responsive design
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                      Lead capture forms + CTAs
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                      Google Analytics 4 setup
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                      One round of revisions
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0" />
-                      7-14 day delivery
-                    </li>
-                  </ul>
+              <div className="space-y-4 mb-6">
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 rounded-full bg-cyan-400 mt-2" />
+                  <div>
+                    <h3 className="font-medium">{service.name}</h3>
+                    <p className="text-sm text-zinc-500">{service.description}</p>
+                  </div>
                 </div>
 
-                <div className="pt-6 border-t border-white/10">
-                  <div className="flex justify-between text-zinc-400 mb-2">
-                    <span>Subtotal</span>
-                    <span>$999.95</span>
-                  </div>
-                  {promoApplied && (
-                    <div className="flex justify-between text-emerald-400 mb-2">
-                      <span>Promo Code (LAUNCH10)</span>
-                      <span>-$100.00</span>
+                <div className="pt-4 border-t border-white/10 space-y-2">
+                  {setupPrice && (
+                    <div className="flex justify-between text-zinc-400">
+                      <span>{monthlyPrice ? 'Setup fee' : 'One-time'}</span>
+                      <span>${setupPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-xl mt-4 pt-4 border-t border-white/10">
-                    <span>Total</span>
-                    <span className="bg-gradient-to-r from-cyan-400 to-violet-400 text-transparent bg-clip-text">
-                      ${promoApplied ? '899.95' : '999.95'}
-                    </span>
-                  </div>
+                  {monthlyPrice && (
+                    <div className="flex justify-between text-zinc-400">
+                      <span>Monthly</span>
+                      <span>${monthlyPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}/mo</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -273,11 +288,11 @@ export function CheckoutPage() {
               <div className="space-y-3 pt-6 border-t border-white/10">
                 <div className="flex items-center gap-3 text-sm text-zinc-400">
                   <Shield className="w-5 h-5 text-cyan-400" />
-                  <span>Secure 256-bit SSL encryption</span>
+                  <span>Powered by Stripe — PCI compliant</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-zinc-400">
                   <Clock className="w-5 h-5 text-violet-400" />
-                  <span>7-14 day delivery timeline</span>
+                  <span>Work begins within 24 hours</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-zinc-400">
                   <CheckCircle className="w-5 h-5 text-emerald-400" />

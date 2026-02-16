@@ -26,13 +26,19 @@
 - [x] Install `@supabase/supabase-js` and configure client in app
 - [x] Generate TypeScript types from schema
 
-### 1.2 Stripe Setup (P0)
-- [ ] Configure Stripe products and prices matching the pricing table
-- [ ] Set up one-time charges for setup fees
-- [ ] Set up recurring subscriptions for monthly services
-- [ ] Install `@stripe/stripe-js` and `@stripe/react-stripe-js`
-- [ ] Create Stripe webhook handler (Vercel edge function)
-- [ ] Handle payment success: auto-create Supabase account, redirect to onboarding
+### 1.2 Stripe Setup (P0) -- MOSTLY COMPLETE
+- [x] Configure Stripe products and prices matching the pricing table (10 products, 17 prices)
+- [x] Set up one-time charges for setup fees (7 products)
+- [x] Set up recurring subscriptions for monthly services (7 products)
+- [x] Install `stripe` and `@stripe/stripe-js`
+- [x] Create checkout session API endpoint (`api/create-checkout-session.ts`)
+- [x] Create Stripe webhook handler (`api/stripe-webhook.ts`) — handles checkout.session.completed, subscription events, invoice failures
+- [x] Rewire CheckoutPage to use Stripe Checkout (hosted) — fetches service from Supabase, redirects to Stripe
+- [x] Create CheckoutSuccessPage with next-step CTAs
+- [x] Register webhook endpoint in Stripe (signature verification enabled)
+- [x] Store Stripe price IDs in Supabase services table (migration applied)
+- [x] Set Vercel env vars: STRIPE_SECRET_KEY, VITE_STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET
+- [~] Handle payment success: auto-create Supabase account, redirect to onboarding (webhook creates order + client records for existing users; new users create account post-checkout)
 
 ### 1.3 Vercel Deployment (P0) -- MOSTLY COMPLETE
 - [x] Set up Vercel project and link (project: `satoriwebsitedemo`)
@@ -87,12 +93,12 @@
 
 ## Phase 3: Payment & Checkout Flow
 
-### 3.1 Checkout Integration (P0)
-- [ ] Wire checkout form to Stripe (create PaymentIntent or Checkout Session)
-- [ ] Handle payment success callback
-- [ ] Auto-create Supabase user account on successful payment
+### 3.1 Checkout Integration (P0) -- MOSTLY COMPLETE
+- [x] Wire checkout page to Stripe (Checkout Session via `api/create-checkout-session.ts`)
+- [x] Handle payment success callback (CheckoutSuccessPage at `/checkout/success`)
+- [~] Auto-create Supabase user account on successful payment (webhook handles for existing users; new users create account via `/checkout/create-account`)
 - [ ] Redirect to onboarding wizard after account creation
-- [ ] Store order record in Supabase (client, service, amount, status)
+- [x] Store order record in Supabase (webhook creates order with service, amount, status, session ID)
 - [ ] Send order confirmation email via Resend
 
 ### 3.2 Portal Upsell Checkout (P0)

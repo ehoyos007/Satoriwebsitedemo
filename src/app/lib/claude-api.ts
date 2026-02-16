@@ -1,7 +1,10 @@
 import type { ClientInput } from '../pages/admin/CaseStudyWizard';
 import type { CaseStudy } from '../data/caseStudies';
 
-const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
+// In production, calls go through /api/claude edge function (no API key exposed)
+// In development, falls back to direct API call if VITE_CLAUDE_API_KEY is set
+const CLAUDE_PROXY_URL = '/api/claude';
+const CLAUDE_DIRECT_URL = 'https://api.anthropic.com/v1/messages';
 
 export interface GenerationCallbacks {
   onPhaseChange: (phase: string) => void;
@@ -123,12 +126,6 @@ export async function generateCaseStudy(
   input: ClientInput,
   callbacks: GenerationCallbacks
 ): Promise<Partial<CaseStudy>> {
-  const apiKey = import.meta.env.VITE_CLAUDE_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('Claude API key not configured. Please set VITE_CLAUDE_API_KEY in your .env.local file.');
-  }
-
   callbacks.onPhaseChange('Preparing request...');
 
   const systemPrompt = getSystemPrompt();
@@ -136,27 +133,38 @@ export async function generateCaseStudy(
 
   callbacks.onPhaseChange('Analyzing client information...');
 
+  // Use proxy in production, fall back to direct API in development
+  const useProxy = !import.meta.env.VITE_CLAUDE_API_KEY;
+  const apiKey = import.meta.env.VITE_CLAUDE_API_KEY;
+
+  if (!useProxy && !apiKey) {
+    throw new Error('Claude API not configured. Deploy to Vercel or set VITE_CLAUDE_API_KEY for local development.');
+  }
+
+  const requestBody = {
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 4096,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userPrompt }],
+  };
+
   try {
-    const response = await fetch(CLAUDE_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4096,
-        system: systemPrompt,
-        messages: [
-          {
-            role: 'user',
-            content: userPrompt,
+    const response = useProxy
+      ? await fetch(CLAUDE_PROXY_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+        })
+      : await fetch(CLAUDE_DIRECT_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': apiKey!,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true',
           },
-        ],
-      }),
-    });
+          body: JSON.stringify(requestBody),
+        });
 
     callbacks.onPhaseChange('Generating case study content...');
 

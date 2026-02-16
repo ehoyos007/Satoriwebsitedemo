@@ -193,6 +193,65 @@
 
 ---
 
+### 2026-02-16 (Session 5) | Stripe Integration — Products, Checkout, Webhooks
+
+**Focus:** Phase 3 — Stripe payment integration
+
+**Completed:**
+- Installed `stripe` (v20.3.1) and `@stripe/stripe-js` (v8.7.0) packages
+- Added Stripe env vars to `.env.local` and Vercel production:
+  - `VITE_STRIPE_PUBLISHABLE_KEY` (frontend), `STRIPE_SECRET_KEY` (server-side), `STRIPE_WEBHOOK_SECRET`
+- Created setup script (`scripts/setup-stripe-products.mjs`) and provisioned all 10 Stripe products:
+  - 7 products with one-time setup prices
+  - 7 products with recurring monthly prices
+  - 17 total Stripe Price objects
+- Applied migration `20260216000002_stripe_price_ids.sql` — wrote all Stripe Price IDs to Supabase services table
+- Created `api/create-checkout-session.ts` — Vercel serverless function using Stripe REST API directly (fetch-based, not SDK)
+  - Accepts priceId + serviceSlug, creates Checkout Session, returns redirect URL
+  - Auto-detects one-time vs subscription mode from price
+  - Pre-fills customer email if user is logged in
+- Rewrote `CheckoutPage.tsx` — replaced fake credit card form with dynamic Stripe checkout:
+  - Fetches service data from Supabase by slug (`?service=website-build`)
+  - Shows service features, description, pricing options
+  - Services with both setup + monthly show two payment buttons
+  - Loading states, error handling, responsive layout
+- Created `CheckoutSuccessPage.tsx` — post-payment success page with:
+  - Next steps list, "Create Your Account" CTA for new users, "Go to Portal" for logged-in users
+- Built full `api/stripe-webhook.ts` handler (uses Stripe SDK only for signature verification, fetch for Supabase):
+  - `checkout.session.completed`: looks up service, finds/creates client, creates order + activity log
+  - `customer.subscription.created/updated`: syncs subscription record to Supabase
+  - `customer.subscription.deleted`: marks subscription cancelled
+  - `invoice.payment_failed`: marks subscription past_due
+- Registered webhook endpoint in Stripe for `https://www.satori-labs.cloud/api/stripe-webhook`
+- Installed Stripe CLI via Homebrew
+- Fixed Stripe SDK v20 type incompatibilities (current_period_start/end moved to subscription items, invoice.subscription moved to invoice.parent.subscription_details)
+- Deployed 3 times to production, final deploy clean with zero TS errors
+- **Verified end-to-end:** Checkout page loads → shows dynamic pricing → click Pay → redirects to Stripe hosted checkout → correct product/price displayed
+
+**Gotcha discovered:**
+- Stripe SDK v20 has connection issues in Vercel serverless functions ("An error occurred with our connection to Stripe. Request was retried 2 times."). Solved by using Stripe REST API directly via `fetch` instead of the SDK for API calls. SDK is only used for webhook signature verification.
+
+**Files created (4):**
+- `scripts/setup-stripe-products.mjs`
+- `supabase/migrations/20260216000002_stripe_price_ids.sql`
+- `api/create-checkout-session.ts`
+- `src/app/pages/checkout/CheckoutSuccessPage.tsx`
+
+**Files modified (4):**
+- `src/app/pages/checkout/CheckoutPage.tsx` (complete rewrite)
+- `api/stripe-webhook.ts` (complete rewrite from placeholder)
+- `src/app/App.tsx` (added CheckoutSuccessPage import + route)
+- `.env.local` (added Stripe keys)
+
+**Next session should:**
+1. Wire "Buy Website" nav button and pricing page CTAs to `/checkout?service=<slug>`
+2. Wire portal "Add Services" flow to Stripe checkout
+3. Test full payment with Stripe test card (4242 4242 4242 4242)
+4. Test webhook fires and creates order/client records in Supabase
+5. Start Resend email integration (order confirmation, welcome email)
+
+---
+
 ## Completed Work Summary
 
 | Phase | Description | Status |
@@ -206,4 +265,4 @@
 | -- | Infrastructure (Supabase + Vercel) | COMPLETE |
 | -- | Auth Integration (Supabase Auth) | COMPLETE |
 | -- | Google OAuth | COMPLETE |
-| -- | Backend Integration (Stripe, Email, etc.) | NOT STARTED |
+| -- | Stripe Integration | MOSTLY COMPLETE (products, checkout, webhooks live) |
