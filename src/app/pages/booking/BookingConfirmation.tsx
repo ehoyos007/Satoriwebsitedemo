@@ -36,6 +36,15 @@ interface BookingResult {
   slotEnd: string;
 }
 
+function loadFormData() {
+  try {
+    const saved = sessionStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function BookingConfirmation() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,20 +53,13 @@ export function BookingConfirmation() {
   const [booking, setBooking] = useState<BookingResult | null>(null);
   const [createAccount, setCreateAccount] = useState(false);
   const bookingCreated = useRef(false);
+  const formDataRef = useRef(loadFormData());
 
   const state = location.state as BookingState | undefined;
   const timezone = state?.timezone || 'America/New_York';
   const tzLabel = TIMEZONES[timezone] || timezone.replace(/_/g, ' ');
 
-  // Load form data from sessionStorage
-  const formData = (() => {
-    try {
-      const saved = sessionStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  })();
+  const formData = formDataRef.current;
 
   // Redirect if no state or form data
   useEffect(() => {
