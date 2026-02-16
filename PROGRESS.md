@@ -252,6 +252,55 @@
 
 ---
 
+### 2026-02-16 (Session 6) | CTA Wiring, Webhook Fix, E2E Payment Test
+
+**Focus:** Wire checkout CTAs, fix webhook pipeline, verify end-to-end payment flow
+
+**Completed:**
+- Wired 7 "Buy Website" CTAs across 4 files to `/checkout?service=website-build`:
+  - `HomePage.tsx` hero button (was `/pricing` — dead loop)
+  - `Navigation.tsx` desktop + mobile buttons (was `/checkout` without service param)
+  - `PricingPage.tsx` tier CTA, hero button, bottom CTA (tier was `/pricing` — dead loop)
+  - `WebsiteBuildPage.tsx` "Buy Now" card (was `/pricing` — dead loop)
+- Discovered all 7 Vercel env vars had `\n` corruption (from `vercel env pull` format). Removed and re-set all:
+  - STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, SUPABASE_SERVICE_ROLE_KEY, CLAUDE_API_KEY
+  - VITE_STRIPE_PUBLISHABLE_KEY, VITE_SUPABASE_ANON_KEY, VITE_SUPABASE_URL
+- Created migration `20260216000003_nullable_client_user_id.sql`:
+  - Made `clients.user_id` nullable (supports "buy first, sign up later" flow)
+  - Added partial unique index on non-null user_id
+  - Added index on business_email for pending client lookup
+- Updated `api/stripe-webhook.ts`:
+  - Webhook now creates pending client (user_id=null) + order for new customers
+  - Checks for existing pending client by business_email before creating duplicate
+  - Fixed activity_log column names: `activity_type`/`title`/`description` → `type`/`message`
+- Verified end-to-end payment flow with Stripe test card (4242):
+  - Checkout page → Stripe hosted checkout → webhook fires → client created → order created → activity logged
+  - Two successful test payments verified in Supabase (a@gmail.com, test-e2e@satori.dev)
+
+**Bugs found and fixed:**
+- 3 CTAs pointed to `/pricing` creating dead loops (no path to checkout)
+- All Vercel env vars corrupted with trailing `\n` — webhook signature verification always failed
+- `clients.user_id NOT NULL` prevented creating records for new customers (no profile yet)
+- Activity log INSERT failed silently due to column name mismatch with schema
+
+**Files created (1):**
+- `supabase/migrations/20260216000003_nullable_client_user_id.sql`
+
+**Files modified (5):**
+- `api/stripe-webhook.ts` (pending client flow + activity_log fix)
+- `src/app/components/Navigation.tsx` (checkout CTAs)
+- `src/app/pages/HomePage.tsx` (hero CTA)
+- `src/app/pages/PricingPage.tsx` (3 checkout CTAs)
+- `src/app/pages/services/WebsiteBuildPage.tsx` (Buy Now CTA)
+
+**Next session should:**
+1. Link pending client to profile on account signup (post-checkout create-account flow)
+2. Wire portal "Add Services" flow to Stripe checkout for upsells
+3. Start Resend email integration (order confirmation, welcome email)
+4. Test payment flow for logged-in users (should link to existing profile)
+
+---
+
 ## Completed Work Summary
 
 | Phase | Description | Status |
@@ -265,4 +314,4 @@
 | -- | Infrastructure (Supabase + Vercel) | COMPLETE |
 | -- | Auth Integration (Supabase Auth) | COMPLETE |
 | -- | Google OAuth | COMPLETE |
-| -- | Stripe Integration | MOSTLY COMPLETE (products, checkout, webhooks live) |
+| -- | Stripe Integration | COMPLETE (products, checkout, webhooks, E2E verified) |

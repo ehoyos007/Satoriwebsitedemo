@@ -92,17 +92,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           break
         }
 
-        // 2. Find or note the client — we need a user/profile first
-        let profiles = await supabaseAdmin(`profiles?email=eq.${encodeURIComponent(customerEmail || '')}&select=id`)
-        let profileId = profiles?.[0]?.id
-
+        // 2. Find or create client record
+        // First check by profile email, then by business_email (for pre-signup purchases)
         let clientId: string | null = null
+
+        // Try to find existing profile by email
+        const profiles = await supabaseAdmin(`profiles?email=eq.${encodeURIComponent(customerEmail || '')}&select=id`)
+        const profileId = profiles?.[0]?.id
+
         if (profileId) {
-          // Check if client record exists
+          // User has an account — find or create client linked to profile
           const clients = await supabaseAdmin(`clients?user_id=eq.${profileId}&select=id,stripe_customer_id`)
           if (clients?.[0]) {
             clientId = clients[0].id
-            // Update Stripe customer ID if not set
             if (!clients[0].stripe_customer_id && session.customer) {
               await supabaseAdmin(`clients?id=eq.${clientId}`, {
                 method: 'PATCH',
@@ -110,7 +112,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               })
             }
           } else {
-            // Create client record
             const newClients = await supabaseAdmin('clients', {
               method: 'POST',
               body: JSON.stringify({
@@ -120,6 +121,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               }),
             })
             clientId = newClients?.[0]?.id
+          }
+        } else if (customerEmail) {
+          // No account yet — check for existing pending client by email
+          const pendingClients = await supabaseAdmin(`clients?business_email=eq.${encodeURIComponent(customerEmail)}&user_id=is.null&select=id`)
+          if (pendingClients?.[0]) {
+            clientId = pendingClients[0].id
+            if (session.customer) {
+              await supabaseAdmin(`clients?id=eq.${clientId}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ stripe_customer_id: session.customer }),
+              })
+            }
+          } else {
+            // Create pending client (no user_id — will be linked on signup)
+            const newClients = await supabaseAdmin('clients', {
+              method: 'POST',
+              body: JSON.stringify({
+                user_id: null,
+                stripe_customer_id: session.customer || null,
+                business_email: customerEmail,
+              }),
+            })
+            clientId = newClients?.[0]?.id
+            console.log(`Created pending client for ${customerEmail} (no account yet)`)
           }
         }
 
@@ -148,13 +173,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             method: 'POST',
             body: JSON.stringify({
               client_id: clientId,
-              activity_type: 'purchase',
-              title: `Purchased ${service.name}`,
-              description: `Payment of $${(amountCents / 100).toFixed(2)} for ${service.name}`,
+              type: 'purchase',
+              message: `Purchased ${service.name} — $${(amountCents / 100).toFixed(2)}`,
             }),
           })
         } else {
-          console.log(`No profile found for ${customerEmail}. Order will be created after account signup.`)
+          console.error(`Could not create client or order for ${customerEmail}`)
         }
 
         break

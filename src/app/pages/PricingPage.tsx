@@ -67,7 +67,7 @@ export function PricingPage() {
         'Launch-ready in 7–10 days',
       ],
       cta: 'Buy Website — $999.95',
-      ctaLink: '/pricing',
+      ctaLink: '/checkout?service=website-build',
       highlighted: false,
     },
     {
@@ -278,7 +278,7 @@ export function PricingPage() {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  to="/checkout"
+                  to="/checkout?service=website-build"
                   className="group relative px-8 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/50"
                 >
                   <span className="relative z-10 flex items-center justify-center gap-2">
@@ -636,7 +636,7 @@ export function PricingPage() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                to="/checkout"
+                to="/checkout?service=website-build"
                 className="group relative px-8 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/50"
               >
                 <span className="relative z-10">Buy Website — $999.95</span>

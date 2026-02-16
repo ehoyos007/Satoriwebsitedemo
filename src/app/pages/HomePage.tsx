@@ -36,7 +36,7 @@ export function HomePage() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link
-                to="/pricing"
+                to="/checkout?service=website-build"
                 className="group relative px-8 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/50"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">

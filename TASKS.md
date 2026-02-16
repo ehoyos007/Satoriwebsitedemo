@@ -26,7 +26,7 @@
 - [x] Install `@supabase/supabase-js` and configure client in app
 - [x] Generate TypeScript types from schema
 
-### 1.2 Stripe Setup (P0) -- MOSTLY COMPLETE
+### 1.2 Stripe Setup (P0) -- COMPLETE
 - [x] Configure Stripe products and prices matching the pricing table (10 products, 17 prices)
 - [x] Set up one-time charges for setup fees (7 products)
 - [x] Set up recurring subscriptions for monthly services (7 products)
@@ -38,7 +38,11 @@
 - [x] Register webhook endpoint in Stripe (signature verification enabled)
 - [x] Store Stripe price IDs in Supabase services table (migration applied)
 - [x] Set Vercel env vars: STRIPE_SECRET_KEY, VITE_STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET
-- [~] Handle payment success: auto-create Supabase account, redirect to onboarding (webhook creates order + client records for existing users; new users create account post-checkout)
+- [x] Handle payment success: webhook creates pending client + order for new customers (user_id=null), links to profile for existing users
+- [x] Wire all "Buy Website" CTAs to `/checkout?service=website-build` (HomePage, Navigation, PricingPage, WebsiteBuildPage)
+- [x] Fix Vercel env var `\n` corruption on all 7 production env vars
+- [x] End-to-end payment test verified: checkout → Stripe → webhook → Supabase records
+- [ ] Link pending client to profile on account signup (post-checkout create-account flow)
 
 ### 1.3 Vercel Deployment (P0) -- MOSTLY COMPLETE
 - [x] Set up Vercel project and link (project: `satoriwebsitedemo`)
@@ -96,9 +100,11 @@
 ### 3.1 Checkout Integration (P0) -- MOSTLY COMPLETE
 - [x] Wire checkout page to Stripe (Checkout Session via `api/create-checkout-session.ts`)
 - [x] Handle payment success callback (CheckoutSuccessPage at `/checkout/success`)
-- [~] Auto-create Supabase user account on successful payment (webhook handles for existing users; new users create account via `/checkout/create-account`)
+- [x] Auto-create pending client + order on payment (webhook handles both new and existing users)
+- [ ] Link pending client to profile on account signup
 - [ ] Redirect to onboarding wizard after account creation
 - [x] Store order record in Supabase (webhook creates order with service, amount, status, session ID)
+- [x] Activity log entry on purchase
 - [ ] Send order confirmation email via Resend
 
 ### 3.2 Portal Upsell Checkout (P0)

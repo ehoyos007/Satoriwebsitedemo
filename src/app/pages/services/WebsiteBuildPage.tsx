@@ -526,7 +526,7 @@ export function WebsiteBuildPage() {
               </div>
               <p className="text-sm text-zinc-400 mb-6">One-time payment</p>
               <Link
-                to="/pricing"
+                to="/checkout?service=website-build"
                 className="block w-full px-6 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-center hover:scale-105 transition-all mb-6"
               >
                 Buy Now

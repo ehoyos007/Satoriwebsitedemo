@@ -210,7 +210,7 @@ export function Navigation() {
               </Link>
             )}
             <Link
-              to="/checkout"
+              to="/checkout?service=website-build"
               className="group relative px-5 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/50"
             >
               <span className="relative z-10">Buy Website — $999.95</span>
@@ -353,7 +353,7 @@ export function Navigation() {
                   </Link>
                 )}
                 <Link
-                  to="/checkout"
+                  to="/checkout?service=website-build"
                   onClick={() => setMobileMenuOpen(false)}
                   className="block w-full px-5 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white text-center transition-all hover:scale-105"
                 >
