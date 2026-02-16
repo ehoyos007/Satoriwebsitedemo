@@ -5,34 +5,114 @@ import {
   ArrowLeft,
   Building2,
   Target,
-  Calendar,
-  DollarSign,
   Mail,
   Phone,
-  StickyNote,
   CheckCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import { SEO } from '../../components/SEO';
 
+const STORAGE_KEY = 'satori_booking_form';
+
+interface BookingFormData {
+  businessName: string;
+  industry: string;
+  websiteStatus: string;
+  goal: string;
+  timeline: string;
+  budget: string;
+  notes: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+}
+
+const defaultForm: BookingFormData = {
+  businessName: '',
+  industry: '',
+  websiteStatus: '',
+  goal: '',
+  timeline: '',
+  budget: '',
+  notes: '',
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+};
+
+function loadSavedForm(): BookingFormData {
+  try {
+    const saved = sessionStorage.getItem(STORAGE_KEY);
+    if (saved) return { ...defaultForm, ...JSON.parse(saved) };
+  } catch { /* ignore */ }
+  return defaultForm;
+}
+
 export function BookCallPage() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
+  const [form, setForm] = useState<BookingFormData>(loadSavedForm);
+  const [errors, setErrors] = useState<Partial<Record<keyof BookingFormData, string>>>({});
   const totalSteps = 3;
 
+  const update = (field: keyof BookingFormData, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: undefined }));
+  };
+
+  const validateStep = (): boolean => {
+    const errs: Partial<Record<keyof BookingFormData, string>> = {};
+    if (currentStep === 1) {
+      if (!form.businessName.trim()) errs.businessName = 'Required';
+      if (!form.industry) errs.industry = 'Required';
+      if (!form.websiteStatus) errs.websiteStatus = 'Required';
+    } else if (currentStep === 2) {
+      if (!form.goal) errs.goal = 'Required';
+      if (!form.timeline) errs.timeline = 'Required';
+      if (!form.budget) errs.budget = 'Required';
+    } else if (currentStep === 3) {
+      if (!form.firstName.trim()) errs.firstName = 'Required';
+      if (!form.lastName.trim()) errs.lastName = 'Required';
+      if (!form.email.trim()) errs.email = 'Required';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Invalid email';
+      if (!form.phone.trim()) errs.phone = 'Required';
+    }
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleNext = () => {
+    if (!validateStep()) return;
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
+      // Save form to sessionStorage and navigate to schedule page
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(form));
       navigate('/booking/schedule');
     }
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
+
+  const inputClass = (field: keyof BookingFormData) =>
+    `w-full px-4 py-3 bg-zinc-900/50 border rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+      errors[field]
+        ? 'border-red-400/50 focus:border-red-400/50 focus:ring-red-400/20'
+        : 'border-white/10 focus:border-cyan-400/50 focus:ring-cyan-400/20'
+    }`;
+
+  const radioClass = (field: keyof BookingFormData, value: string, accent = 'cyan') =>
+    `flex items-center gap-3 p-4 bg-zinc-900/50 border rounded-lg cursor-pointer transition-colors ${
+      form[field] === value
+        ? `border-${accent}-400/50 bg-${accent}-500/10`
+        : errors[field]
+        ? 'border-red-400/30'
+        : 'border-white/10 hover:border-cyan-400/30'
+    }`;
 
   return (
     <div className="min-h-screen pt-16">
@@ -102,17 +182,20 @@ export function BookCallPage() {
                     <label className="block text-sm text-zinc-400 mb-2">Business Name *</label>
                     <input
                       type="text"
-                      required
-                      className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                      value={form.businessName}
+                      onChange={(e) => update('businessName', e.target.value)}
+                      className={inputClass('businessName')}
                       placeholder="Your Business Name"
                     />
+                    {errors.businessName && <p className="text-red-400 text-xs mt-1">{errors.businessName}</p>}
                   </div>
 
                   <div>
                     <label className="block text-sm text-zinc-400 mb-2">Industry / Category *</label>
                     <select
-                      required
-                      className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                      value={form.industry}
+                      onChange={(e) => update('industry', e.target.value)}
+                      className={inputClass('industry')}
                     >
                       <option value="">Select your industry...</option>
                       <option value="home-services">Home Services (Plumbing, HVAC, Electrical, etc.)</option>
@@ -125,12 +208,14 @@ export function BookCallPage() {
                       <option value="hospitality">Hospitality & Food Service</option>
                       <option value="other">Other</option>
                     </select>
+                    {errors.industry && <p className="text-red-400 text-xs mt-1">{errors.industry}</p>}
                   </div>
 
                   <div>
                     <label className="block text-sm text-zinc-400 mb-2">
                       Current Website Status *
                     </label>
+                    {errors.websiteStatus && <p className="text-red-400 text-xs mb-2">{errors.websiteStatus}</p>}
                     <div className="space-y-2">
                       {[
                         { value: 'none', label: 'No website (starting from scratch)' },
@@ -140,9 +225,16 @@ export function BookCallPage() {
                       ].map((option) => (
                         <label
                           key={option.value}
-                          className="flex items-center gap-3 p-4 bg-zinc-900/50 border border-white/10 rounded-lg cursor-pointer hover:border-cyan-400/30 transition-colors"
+                          className={radioClass('websiteStatus', option.value)}
+                          onClick={() => update('websiteStatus', option.value)}
                         >
-                          <input type="radio" name="website-status" value={option.value} />
+                          <input
+                            type="radio"
+                            name="website-status"
+                            value={option.value}
+                            checked={form.websiteStatus === option.value}
+                            onChange={() => update('websiteStatus', option.value)}
+                          />
                           <span>{option.label}</span>
                         </label>
                       ))}
@@ -166,6 +258,7 @@ export function BookCallPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm text-zinc-400 mb-2">Primary Goal *</label>
+                    {errors.goal && <p className="text-red-400 text-xs mb-2">{errors.goal}</p>}
                     <div className="space-y-2">
                       {[
                         { value: 'calls', label: 'Generate more phone calls' },
@@ -177,9 +270,16 @@ export function BookCallPage() {
                       ].map((option) => (
                         <label
                           key={option.value}
-                          className="flex items-center gap-3 p-3 bg-zinc-900/50 border border-white/10 rounded-lg cursor-pointer hover:border-violet-400/30 transition-colors"
+                          className={radioClass('goal', option.value, 'violet')}
+                          onClick={() => update('goal', option.value)}
                         >
-                          <input type="radio" name="goal" value={option.value} />
+                          <input
+                            type="radio"
+                            name="goal"
+                            value={option.value}
+                            checked={form.goal === option.value}
+                            onChange={() => update('goal', option.value)}
+                          />
                           <span>{option.label}</span>
                         </label>
                       ))}
@@ -189,8 +289,9 @@ export function BookCallPage() {
                   <div>
                     <label className="block text-sm text-zinc-400 mb-2">Desired Timeline *</label>
                     <select
-                      required
-                      className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                      value={form.timeline}
+                      onChange={(e) => update('timeline', e.target.value)}
+                      className={inputClass('timeline')}
                     >
                       <option value="">Select timeline...</option>
                       <option value="asap">ASAP (rush available)</option>
@@ -199,10 +300,12 @@ export function BookCallPage() {
                       <option value="1-2months">1-2 months</option>
                       <option value="flexible">Flexible</option>
                     </select>
+                    {errors.timeline && <p className="text-red-400 text-xs mt-1">{errors.timeline}</p>}
                   </div>
 
                   <div>
                     <label className="block text-sm text-zinc-400 mb-2">Budget Range *</label>
+                    {errors.budget && <p className="text-red-400 text-xs mb-2">{errors.budget}</p>}
                     <div className="space-y-2">
                       {[
                         {
@@ -224,9 +327,23 @@ export function BookCallPage() {
                       ].map((option) => (
                         <label
                           key={option.value}
-                          className="flex items-start gap-3 p-4 bg-zinc-900/50 border border-white/10 rounded-lg cursor-pointer hover:border-violet-400/30 transition-colors"
+                          className={`flex items-start gap-3 p-4 bg-zinc-900/50 border rounded-lg cursor-pointer transition-colors ${
+                            form.budget === option.value
+                              ? 'border-violet-400/50 bg-violet-500/10'
+                              : errors.budget
+                              ? 'border-red-400/30'
+                              : 'border-white/10 hover:border-violet-400/30'
+                          }`}
+                          onClick={() => update('budget', option.value)}
                         >
-                          <input type="radio" name="budget" value={option.value} className="mt-1" />
+                          <input
+                            type="radio"
+                            name="budget"
+                            value={option.value}
+                            checked={form.budget === option.value}
+                            onChange={() => update('budget', option.value)}
+                            className="mt-1"
+                          />
                           <div>
                             <div className="mb-1">{option.label}</div>
                             <div className="text-sm text-zinc-500">{option.desc}</div>
@@ -241,6 +358,8 @@ export function BookCallPage() {
                       Project Notes (optional)
                     </label>
                     <textarea
+                      value={form.notes}
+                      onChange={(e) => update('notes', e.target.value)}
                       className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
                       rows={4}
                       placeholder="Any specific questions, requirements, or details we should know before the call?"
@@ -267,17 +386,21 @@ export function BookCallPage() {
                       <label className="block text-sm text-zinc-400 mb-2">First Name *</label>
                       <input
                         type="text"
-                        required
-                        className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                        value={form.firstName}
+                        onChange={(e) => update('firstName', e.target.value)}
+                        className={inputClass('firstName')}
                       />
+                      {errors.firstName && <p className="text-red-400 text-xs mt-1">{errors.firstName}</p>}
                     </div>
                     <div>
                       <label className="block text-sm text-zinc-400 mb-2">Last Name *</label>
                       <input
                         type="text"
-                        required
-                        className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                        value={form.lastName}
+                        onChange={(e) => update('lastName', e.target.value)}
+                        className={inputClass('lastName')}
                       />
+                      {errors.lastName && <p className="text-red-400 text-xs mt-1">{errors.lastName}</p>}
                     </div>
                   </div>
 
@@ -287,11 +410,13 @@ export function BookCallPage() {
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
                       <input
                         type="email"
-                        required
-                        className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                        value={form.email}
+                        onChange={(e) => update('email', e.target.value)}
+                        className={`pl-11 pr-4 ${inputClass('email').replace('w-full px-4', 'w-full')}`}
                         placeholder="you@company.com"
                       />
                     </div>
+                    {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
                   </div>
 
                   <div>
@@ -300,11 +425,13 @@ export function BookCallPage() {
                       <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
                       <input
                         type="tel"
-                        required
-                        className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                        value={form.phone}
+                        onChange={(e) => update('phone', e.target.value)}
+                        className={`pl-11 pr-4 ${inputClass('phone').replace('w-full px-4', 'w-full')}`}
                         placeholder="(555) 123-4567"
                       />
                     </div>
+                    {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
                   </div>
 
                   <div className="glass-panel p-6 rounded-xl border border-cyan-400/20 bg-cyan-500/5">
@@ -313,8 +440,8 @@ export function BookCallPage() {
                       <div>
                         <h4 className="mb-1">What Happens Next</h4>
                         <p className="text-sm text-zinc-400">
-                          After you schedule your call, you'll have the option to create an account and
-                          upload materials (logo, photos, etc.) so we can review them before the call.
+                          You'll pick a time on the next page, then get a confirmation email
+                          with everything you need to prepare for the call.
                         </p>
                       </div>
                     </div>
@@ -341,7 +468,7 @@ export function BookCallPage() {
             className="group relative px-8 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-105"
           >
             <span className="relative z-10 flex items-center gap-2">
-              {currentStep === totalSteps ? 'Schedule Call' : 'Next Step'}
+              {currentStep === totalSteps ? 'Pick a Time' : 'Next Step'}
               <ArrowRight className="w-5 h-5" />
             </span>
             <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-violet-400 opacity-0 group-hover:opacity-100 transition-opacity" />

@@ -1,7 +1,7 @@
 # TASKS.md - Satori Studios Website
 
 > Active task tracking. Organized by phase and priority.
-> Last updated: 2026-02-16 (end of session 16)
+> Last updated: 2026-02-16 (end of session 17)
 
 ---
 
@@ -227,13 +227,13 @@
 
 ## Phase 6: Booking & Scheduling
 
-### 6.1 Booking Calendar (P1)
-- [ ] Connect existing calendar UI to Supabase availability table
-- [ ] Show real available slots based on admin-configured times
-- [ ] Create booking record in Supabase when client books
-- [ ] Send confirmation email to client
-- [ ] Send notification email to admin
-- [ ] Block slot after booking (prevent double-booking)
+### 6.1 Booking Calendar (P1) -- MOSTLY COMPLETE
+- [x] Connect existing calendar UI to Supabase availability table
+- [x] Show real available slots based on admin-configured times
+- [x] Create booking record in Supabase when client books
+- [x] Send confirmation email to client
+- [x] Send notification email to admin
+- [x] Block slot after booking (prevent double-booking)
 - [ ] Add booking cancellation/reschedule flow
 
 ---

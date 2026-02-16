@@ -112,6 +112,98 @@ interface PaymentFailureData {
   customerEmail: string
 }
 
+// -- Booking Confirmation (guest) --
+
+interface BookingConfirmationData {
+  guestName: string
+  slotStart: string
+  slotEnd: string
+  timezone: string
+}
+
+export function bookingConfirmationEmail(data: BookingConfirmationData) {
+  const start = new Date(data.slotStart)
+  const dateStr = start.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: data.timezone })
+  const startTime = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: data.timezone })
+  const endTime = new Date(data.slotEnd).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: data.timezone })
+  const tzAbbr = data.timezone.replace(/_/g, ' ')
+
+  const html = baseLayout(`
+  <div style="text-align: center; margin-bottom: 32px;">
+    <h1 style="background: linear-gradient(to right, #34d399, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; margin: 0;">
+      Call Confirmed
+    </h1>
+    <p style="color: #a1a1aa; margin-top: 8px;">Hi ${data.guestName}, your strategy call is booked!</p>
+  </div>
+
+  <div style="background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.3); border-radius: 12px; padding: 20px; margin: 24px 0; text-align: center;">
+    <p style="margin: 0 0 8px; color: #e4e4e7; font-size: 18px; font-weight: 600;">${dateStr}</p>
+    <p style="margin: 0; color: #22d3ee; font-size: 16px;">${startTime} – ${endTime} (${tzAbbr})</p>
+  </div>
+
+  <div style="margin: 24px 0;">
+    <h3 style="color: #22d3ee; margin-bottom: 12px;">What to Prepare</h3>
+    <ul style="padding-left: 20px; color: #a1a1aa; line-height: 1.8;">
+      <li>List of services you offer and primary goals</li>
+      <li>Examples of websites you like (if any)</li>
+      <li>Logo, brand colors, or existing marketing materials</li>
+      <li>Any questions about our process or services</li>
+    </ul>
+  </div>
+
+  <div style="text-align: center; margin-top: 32px;">
+    <p style="color: #71717a; font-size: 13px;">Need to reschedule? Reply to this email and we'll find a new time.</p>
+  </div>`)
+
+  return {
+    subject: `Your Strategy Call is Confirmed — ${dateStr}`,
+    html,
+  }
+}
+
+// -- Admin Booking Notification --
+
+interface AdminBookingNotificationData {
+  guestName: string
+  guestEmail: string
+  guestPhone: string
+  serviceInterest: string
+  message: string
+  slotStart: string
+  slotEnd: string
+  bookingId: string
+}
+
+export function adminBookingNotificationEmail(data: AdminBookingNotificationData) {
+  const start = new Date(data.slotStart)
+  const dateStr = start.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/New_York' })
+  const startTime = start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' })
+  const endTime = new Date(data.slotEnd).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York' })
+
+  const html = `
+<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; padding: 24px;">
+  <h2>New Strategy Call Booked</h2>
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr><td style="padding: 8px; color: #666;">Name</td><td style="padding: 8px;"><strong>${data.guestName}</strong></td></tr>
+    <tr><td style="padding: 8px; color: #666;">Email</td><td style="padding: 8px;">${data.guestEmail}</td></tr>
+    <tr><td style="padding: 8px; color: #666;">Phone</td><td style="padding: 8px;">${data.guestPhone}</td></tr>
+    <tr><td style="padding: 8px; color: #666;">Interest</td><td style="padding: 8px;">${data.serviceInterest}</td></tr>
+    <tr><td style="padding: 8px; color: #666;">Date</td><td style="padding: 8px;"><strong>${dateStr}</strong></td></tr>
+    <tr><td style="padding: 8px; color: #666;">Time</td><td style="padding: 8px;">${startTime} – ${endTime} ET</td></tr>
+    ${data.message ? `<tr><td style="padding: 8px; color: #666;">Notes</td><td style="padding: 8px;">${data.message}</td></tr>` : ''}
+    <tr><td style="padding: 8px; color: #666;">Booking ID</td><td style="padding: 8px; font-family: monospace; font-size: 12px;">${data.bookingId}</td></tr>
+  </table>
+  <p style="margin-top: 16px;"><a href="https://www.satori-labs.cloud/admin/bookings">View in Admin</a></p>
+</div>`
+
+  return {
+    subject: `New Call Booked: ${data.guestName} — ${dateStr}`,
+    html,
+  }
+}
+
+// -- Payment Failure (customer) --
+
 export function paymentFailureEmail(data: PaymentFailureData) {
   const portalUrl = 'https://www.satori-labs.cloud/portal/billing'
 

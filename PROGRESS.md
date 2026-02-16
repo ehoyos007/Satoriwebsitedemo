@@ -7,6 +7,59 @@
 
 ## Session Log
 
+### 2026-02-16 (Session 17) | Booking Calendar — Full Public Flow
+
+**Focus:** Wire the public booking flow (BookCallPage → ScheduleCallPage → BookingConfirmation) to real Supabase availability slots and booking creation with email notifications.
+
+**Completed:**
+- **BookCallPage.tsx** — Added controlled form state for all 11 fields across 3 steps, per-step validation with inline error messages, sessionStorage persistence so form data carries to subsequent pages
+- **ScheduleCallPage.tsx** — Complete rewrite from hardcoded Jan 2025 calendar to real Supabase integration:
+  - Reads `availability_slots` where `is_booked = false` and `start_time > now()`
+  - Dynamic calendar grid showing the month of the first available date
+  - Available dates marked with cyan dots, clickable to show time slots
+  - "More Available Dates" section for slots in other months
+  - Timezone selector (auto-detects user timezone, 6 US zones)
+  - Time slots formatted in user's selected timezone
+  - Loading, empty, and error states
+  - Back button to return to form
+  - Redirects to `/book-call` if no form data in sessionStorage
+- **BookingConfirmation.tsx** — Complete rewrite from hardcoded confirmation to real booking creation:
+  - Calls `api/create-booking` on mount with all guest info from sessionStorage + slot from navigation state
+  - Loading spinner during booking creation
+  - Handles 409 conflict (slot taken between selection and confirmation) with "Pick Another Time" recovery
+  - Shows real confirmed date/time/timezone
+  - Cleans up sessionStorage after successful booking
+  - Keeps optional account creation flow (routes to `/checkout/create-account`)
+- **api/create-booking.ts** — New serverless endpoint:
+  - Race condition check (verifies slot `is_booked = false` before creating)
+  - Creates booking record with guest_name, guest_email, guest_phone, service_interest, message
+  - Marks slot as `is_booked = true`
+  - Sends confirmation email to guest via Resend (date/time/prep checklist)
+  - Sends notification email to admin via Resend (guest details, interest, booking ID)
+  - Awaits all async work before responding (Vercel process lifecycle)
+- **api/_lib/email-templates.ts** — Added 2 new templates:
+  - `bookingConfirmationEmail()` — dark theme, date/time with timezone, prep checklist
+  - `adminBookingNotificationEmail()` — guest details table, admin portal link
+
+**Testing (local with vercel dev):**
+| Test | Result |
+|------|--------|
+| Anon key reads available slots (public RLS) | Pass — 10 slots returned |
+| `create-booking` creates booking record | Pass — booking ID + slot times returned |
+| Slot marked `is_booked = true` in DB | Pass |
+| Booking record has all guest fields | Pass |
+| Double-booking returns 409 | Pass — "slot no longer available" |
+| Booked slot hidden from public query | Pass — 9 remaining (was 10) |
+
+**Files created (1):** `api/create-booking.ts`
+**Files modified (4):** `api/_lib/email-templates.ts`, `BookCallPage.tsx`, `ScheduleCallPage.tsx`, `BookingConfirmation.tsx`
+
+**Build:** Passes with zero errors
+
+**Left off:** Booking calendar fully wired. Remaining: cancellation/reschedule flow (6.1), remaining email templates (1.4), marketing copy review (7.2), testing & launch prep (Phase 8).
+
+---
+
 ### 2026-02-16 (Session 16) | Admin Portal — Full Implementation
 
 **Focus:** Build the complete admin portal as nested routes within the existing app at `/admin/*`, replicating the client portal sidebar + Outlet pattern with code-splitting.
