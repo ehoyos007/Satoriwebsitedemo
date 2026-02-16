@@ -2,13 +2,10 @@ import { motion } from 'motion/react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { CheckCircle, Lock, Clock, Shield, ArrowRight, Loader2, AlertCircle, XCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { retryQuery, retryFetch } from '../../lib/retry';
 import { SEO } from '../../components/SEO';
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 interface ServiceData {
   id: string;
@@ -109,6 +106,8 @@ export function CheckoutPage() {
       // Redirect to Stripe Checkout
       if (data.url) {
         window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned. Please try again.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
