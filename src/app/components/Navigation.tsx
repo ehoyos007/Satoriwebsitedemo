@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, LogIn, Menu, X, User, LogOut, LayoutDashboard } from 'lucide-react';
+import { ChevronDown, LogIn, Menu, X, User, LogOut, LayoutDashboard, Shield } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import logoImage from '@/assets/satori-logo.png';
 import { useAuth } from '@/app/contexts/AuthContext';
@@ -26,7 +26,7 @@ function getInitials(name: string | null | undefined): string {
 export function Navigation() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, isAdmin, signOut } = useAuth();
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
@@ -209,6 +209,15 @@ export function Navigation() {
                     <LayoutDashboard className="w-4 h-4 mr-2" />
                     Portal
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem
+                      className="text-zinc-300 focus:text-white focus:bg-cyan-500/10 cursor-pointer"
+                      onClick={() => navigate('/admin')}
+                    >
+                      <Shield className="w-4 h-4 mr-2" />
+                      Admin
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator className="bg-white/10" />
                   <DropdownMenuItem
                     className="text-zinc-300 focus:text-white focus:bg-red-500/10 cursor-pointer"
@@ -362,6 +371,16 @@ export function Navigation() {
                       <LayoutDashboard className="w-4 h-4" />
                       Portal
                     </Link>
+                    {isAdmin && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all text-zinc-300 hover:text-white"
+                      >
+                        <Shield className="w-4 h-4" />
+                        Admin
+                      </Link>
+                    )}
                     <button
                       onClick={() => { handleSignOut(); setMobileMenuOpen(false); }}
                       className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg border border-zinc-700 hover:border-red-400/50 hover:bg-red-500/5 transition-all text-zinc-300 hover:text-white"

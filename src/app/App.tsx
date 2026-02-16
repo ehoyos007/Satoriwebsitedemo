@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { AuthProvider } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -44,12 +44,32 @@ import { LoginPage } from './pages/LoginPage';
 import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 import { AuthCallbackPage } from './pages/auth/AuthCallbackPage';
-import { CaseStudyWizard } from './pages/admin/CaseStudyWizard';
-import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
 import { AnimatedGalaxyBackground } from './components/AnimatedGalaxyBackground';
+
+// Lazy-loaded admin pages (code-split so marketing pages stay fast)
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
+const AdminOverview = lazy(() => import('./pages/admin/AdminOverview').then(m => ({ default: m.AdminOverview })));
+const AdminClients = lazy(() => import('./pages/admin/AdminClients').then(m => ({ default: m.AdminClients })));
+const AdminClientDetail = lazy(() => import('./pages/admin/AdminClientDetail').then(m => ({ default: m.AdminClientDetail })));
+const AdminProjects = lazy(() => import('./pages/admin/AdminProjects').then(m => ({ default: m.AdminProjects })));
+const AdminProjectDetail = lazy(() => import('./pages/admin/AdminProjectDetail').then(m => ({ default: m.AdminProjectDetail })));
+const AdminOrders = lazy(() => import('./pages/admin/AdminOrders').then(m => ({ default: m.AdminOrders })));
+const AdminSubscriptions = lazy(() => import('./pages/admin/AdminSubscriptions').then(m => ({ default: m.AdminSubscriptions })));
+const AdminAvailability = lazy(() => import('./pages/admin/AdminAvailability').then(m => ({ default: m.AdminAvailability })));
+const AdminBookings = lazy(() => import('./pages/admin/AdminBookings').then(m => ({ default: m.AdminBookings })));
+const AdminServices = lazy(() => import('./pages/admin/AdminServices').then(m => ({ default: m.AdminServices })));
+const LazyCaseStudyWizard = lazy(() => import('./pages/admin/CaseStudyWizard').then(m => ({ default: m.CaseStudyWizard })));
+
+function AdminLoadingFallback() {
+  return (
+    <div className="min-h-[50vh] flex items-center justify-center">
+      <div className="w-10 h-10 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+    </div>
+  );
+}
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -135,9 +155,20 @@ function AnimatedRoutes() {
           <Route path="/booking/schedule" element={<ScheduleCallPage />} />
           <Route path="/booking/confirmation" element={<BookingConfirmation />} />
 
-          {/* Admin Tools (protected, admin only) */}
-          <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/admin/case-study-wizard" element={<ProtectedRoute requiredRole="admin"><CaseStudyWizard /></ProtectedRoute>} />
+          {/* Admin Portal (protected, admin only, lazy-loaded) */}
+          <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><Suspense fallback={<AdminLoadingFallback />}><AdminLayout /></Suspense></ProtectedRoute>}>
+            <Route index element={<Suspense fallback={<AdminLoadingFallback />}><AdminOverview /></Suspense>} />
+            <Route path="clients" element={<Suspense fallback={<AdminLoadingFallback />}><AdminClients /></Suspense>} />
+            <Route path="clients/:clientId" element={<Suspense fallback={<AdminLoadingFallback />}><AdminClientDetail /></Suspense>} />
+            <Route path="projects" element={<Suspense fallback={<AdminLoadingFallback />}><AdminProjects /></Suspense>} />
+            <Route path="projects/:projectId" element={<Suspense fallback={<AdminLoadingFallback />}><AdminProjectDetail /></Suspense>} />
+            <Route path="orders" element={<Suspense fallback={<AdminLoadingFallback />}><AdminOrders /></Suspense>} />
+            <Route path="subscriptions" element={<Suspense fallback={<AdminLoadingFallback />}><AdminSubscriptions /></Suspense>} />
+            <Route path="availability" element={<Suspense fallback={<AdminLoadingFallback />}><AdminAvailability /></Suspense>} />
+            <Route path="bookings" element={<Suspense fallback={<AdminLoadingFallback />}><AdminBookings /></Suspense>} />
+            <Route path="services" element={<Suspense fallback={<AdminLoadingFallback />}><AdminServices /></Suspense>} />
+            <Route path="case-study-wizard" element={<Suspense fallback={<AdminLoadingFallback />}><LazyCaseStudyWizard /></Suspense>} />
+          </Route>
 
           {/* 404 Catch-all */}
           <Route path="*" element={<NotFoundPage />} />

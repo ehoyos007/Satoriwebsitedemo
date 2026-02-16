@@ -1,7 +1,7 @@
 # TASKS.md - Satori Studios Website
 
 > Active task tracking. Organized by phase and priority.
-> Last updated: 2026-02-16 (end of session 15)
+> Last updated: 2026-02-16 (end of session 16)
 
 ---
 
@@ -184,38 +184,44 @@
 
 ---
 
-## Phase 5: Admin Portal (Separate App)
+## Phase 5: Admin Portal -- COMPLETE (Session 16)
 
-### 5.1 Admin App Scaffold (P1)
-- [ ] Create new Vite app for `admin.satoristudios.com`
-- [ ] Set up shared Supabase client configuration
-- [ ] Build admin auth (admin-only login)
-- [ ] Create admin layout with sidebar navigation
-- [ ] Deploy to Vercel as separate project on admin subdomain
+### 5.1 Admin Portal (nested routes at /admin/*) (P1) -- COMPLETE
+- [x] AdminLayout with sidebar navigation (mirrors PortalLayout pattern)
+- [x] Lazy-loaded with React.lazy() + Suspense (code-split from marketing bundle)
+- [x] Admin route guard via ProtectedRoute requiredRole="admin"
+- [x] Admin link in Navigation dropdown (desktop + mobile, guarded by isAdmin)
 
-### 5.2 Client Management (P1)
-- [ ] Client list view (all clients with status, service, last activity)
-- [ ] Client detail view (project timeline, services, billing, notes)
-- [ ] Update project status/timeline (reflects in client portal)
-- [ ] Activity log per client
+### 5.2 Client Management (P1) -- COMPLETE
+- [x] AdminClients: client list with search + filter (All/Onboarded/Pending)
+- [x] AdminClientDetail: business info header, tabbed Orders/Subscriptions/Projects/Activity, admin notes with save
+- [x] AdminOverview: 4 stat cards (clients, revenue, projects, orders), activity feed, quick actions
 
-### 5.3 Merge Existing Sub-Apps (P1)
-- [ ] Port SatoriProjectTracker features into admin portal
-- [ ] Port SatoriProducts features into admin portal
-- [ ] Migrate data from localStorage to Supabase
-- [ ] Remove standalone sub-app directories after merge
+### 5.3 Orders & Subscriptions (P1) -- COMPLETE
+- [x] AdminOrders: order table with status tabs, formatted amounts, Stripe dashboard links
+- [x] AdminSubscriptions: subscription table with status tabs, period dates, Stripe links
 
-### 5.4 Case Study Wizard Migration (P1)
-- [ ] Move Case Study Wizard into admin portal
+### 5.4 Project Management (P1) -- COMPLETE
+- [x] AdminProjects: project list with status filter tabs, milestone progress column
+- [x] AdminProjectDetail: status dropdown, date editing, milestone CRUD (add/edit/reorder/delete), activity logging
+
+### 5.5 Operational Tools (P1) -- COMPLETE
+- [x] AdminAvailability: slot CRUD (add slot, delete unbooked, bulk weekly add)
+- [x] AdminBookings: booking list with status filter, inline status update
+- [x] AdminServices: service list with edit dialog (pricing, Stripe IDs, features, active toggle)
+- [x] api/admin-update-service.ts: serverless endpoint with auth + admin role validation + field allowlisting
+
+### 5.6 Case Study Wizard (P1) -- INTEGRATED
+- [x] CaseStudyWizard mounted inside admin layout at /admin/case-study-wizard
 - [ ] Proxy Claude API calls through edge function (fix security)
 - [ ] Save generated case studies to Supabase
 - [ ] Add case study management (list, edit, publish/unpublish)
 
-### 5.5 Availability Management (P1)
-- [ ] Build calendar availability management UI
-- [ ] Create Supabase `availability_slots` table
-- [ ] CRUD for time slots (admin sets available times)
-- [ ] Wire to booking page calendar in main app
+### 5.7 Sub-App Migration (P2) -- DEFERRED
+- [ ] Port SatoriProjectTracker features into admin portal
+- [ ] Port SatoriProducts features into admin portal
+- [ ] Migrate data from localStorage to Supabase
+- [ ] Remove standalone sub-app directories after merge
 
 ---
 

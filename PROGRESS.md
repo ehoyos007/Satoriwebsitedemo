@@ -7,6 +7,56 @@
 
 ## Session Log
 
+### 2026-02-16 (Session 16) | Admin Portal — Full Implementation
+
+**Focus:** Build the complete admin portal as nested routes within the existing app at `/admin/*`, replicating the client portal sidebar + Outlet pattern with code-splitting.
+
+**Completed:**
+- **AdminLayout.tsx** — Sidebar with 9 nav items (Overview, Clients, Projects, Orders, Subscriptions, Availability, Bookings, Services, Case Study Wizard), mobile collapsible toggle, profile header, sign-out, `<Outlet />`
+- **AdminOverview.tsx** — 4 stat cards (total clients, total revenue, active projects, pending orders) + quick action links + recent activity feed from `activity_log`
+- **AdminClients.tsx** — Client table with search, filter chips (All/Onboarded/Pending), click-to-navigate to detail
+- **AdminClientDetail.tsx** — Header card with business info + tabbed sections (Orders/Subscriptions/Projects/Activity) + admin notes with inline save
+- **AdminProjects.tsx** — Project table with status filter tabs, milestone progress column
+- **AdminProjectDetail.tsx** — Project status dropdown, milestone CRUD (add/edit status/reorder/delete), date editing, activity logging
+- **AdminOrders.tsx** — Order table with status tabs, formatted amounts, Stripe dashboard links
+- **AdminSubscriptions.tsx** — Subscription table with status tabs, period dates, Stripe links
+- **AdminAvailability.tsx** — Upcoming/past sections, add slot dialog (date + time pickers), delete unbooked, bulk weekly add
+- **AdminBookings.tsx** — Booking table with status filter, inline status update dropdown
+- **AdminServices.tsx** — Service table with edit dialog (name, pricing, Stripe IDs, features JSON, active toggle)
+- **api/admin-update-service.ts** — Serverless endpoint with Bearer token auth, admin role verification via profiles table, field allowlisting, service role Supabase writes
+- **App.tsx** — Replaced flat admin routes with nested `<Route>` structure, all admin pages lazy-loaded with `React.lazy()` + Suspense boundaries
+- **Navigation.tsx** — Added "Admin" link in user dropdown (desktop + mobile), guarded by `isAdmin`
+
+**Architecture:**
+- All admin pages are code-split — zero impact on marketing page bundle size (each page is its own chunk: AdminLayout 4.5KB, AdminClientDetail 14KB, etc.)
+- All reads use direct Supabase queries from frontend (admin RLS grants `FOR ALL`)
+- Only service edits go through the serverless API (service role for Stripe ID writes + validation)
+- Team-based parallel build: 4 teammates built pages simultaneously, completed in ~3 minutes
+
+**Files created (12):**
+- `src/app/pages/admin/AdminLayout.tsx`
+- `src/app/pages/admin/AdminOverview.tsx`
+- `src/app/pages/admin/AdminClients.tsx`
+- `src/app/pages/admin/AdminClientDetail.tsx`
+- `src/app/pages/admin/AdminProjects.tsx`
+- `src/app/pages/admin/AdminProjectDetail.tsx`
+- `src/app/pages/admin/AdminOrders.tsx`
+- `src/app/pages/admin/AdminSubscriptions.tsx`
+- `src/app/pages/admin/AdminAvailability.tsx`
+- `src/app/pages/admin/AdminBookings.tsx`
+- `src/app/pages/admin/AdminServices.tsx`
+- `api/admin-update-service.ts`
+
+**Files modified (2):**
+- `src/app/App.tsx` — nested admin routes with lazy imports
+- `src/app/components/Navigation.tsx` — admin link in dropdown
+
+**Build:** Passes with zero errors. All admin chunks properly code-split.
+
+**Left off:** Admin portal fully implemented. Remaining work: marketing copy review (7.2), remaining email templates (1.4), booking calendar (Phase 6), testing & launch prep (Phase 8).
+
+---
+
 ### 2026-02-16 (Session 15) | Page Transitions, Case Study Rewrite, Responsive Fixes
 
 **Focus:** Close out Phase 7 UX polish — page transition animations, replace fictional case studies with local service business examples, responsive design audit and fixes.
@@ -742,3 +792,4 @@ Portal loads → fetches orders/subscriptions via RLS → shows active services
 | -- | Portal Upsell → Stripe | WIRED (reuses checkout page + Stripe hosted checkout) |
 | -- | Onboarding Wizard Backend | COMPLETE (form state, validation, auto-save, file uploads, scheduling, emails, E2E verified) |
 | -- | Email System (Resend) | MOSTLY COMPLETE (onboarding, order confirmation, admin notification, payment failure done) |
+| -- | Admin Portal | COMPLETE (layout, 10 pages, API endpoint, code-split, all CRUD working) |
