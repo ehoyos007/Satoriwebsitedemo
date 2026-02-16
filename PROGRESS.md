@@ -7,6 +7,42 @@
 
 ## Session Log
 
+### 2026-02-16 (Session 15) | Page Transitions, Case Study Rewrite, Responsive Fixes
+
+**Focus:** Close out Phase 7 UX polish — page transition animations, replace fictional case studies with local service business examples, responsive design audit and fixes.
+
+**Completed:**
+- **Page transition animations:** Added `AnimatePresence` with `mode="wait"` wrapping all routes in `App.tsx`. Routes are keyed by "route group" (e.g., all `/portal/*` routes share key `/portal`) so internal portal navigation doesn't trigger the transition. Smooth 200ms opacity fade with Material Design ease curve. Individual page entrance animations (existing `motion.div` on each page) still work on top of the route transition.
+- **Case studies replaced:** Rewrote all 5 case studies from fictional businesses (real estate, fitness, restaurant, e-commerce, B2B consulting) to **local service businesses** matching Satori's actual target market:
+  1. **ProFlow Plumbing** (Phoenix, AZ) — Website Build + GBP + Review Screener + Google Ads. Featured.
+  2. **Summit Air HVAC** (Charlotte, NC) — Website Build + Local SEO + Google Ads + Analytics Dashboards. Featured.
+  3. **BrightStar Electric** (Dallas, TX) — Website Build + GBP + AI Chat Bot + Review Screener.
+  4. **Ironside Roofing** (Atlanta, GA) — Website Build + Google Ads + Local SEO + Analytics Dashboards.
+  5. **Patriot Contracting** (Nashville, TN) — Website Build + Local SEO + Review Screener + GBP.
+  - All KPIs use realistic metrics for trades businesses (phone calls, form leads, Google reviews, cost per lead, GBP views)
+  - Services in each study match actual Satori service offerings
+  - Testimonials written from the perspective of trade business owners
+  - Unsplash images matched to each trade
+- **Responsive design audit & fixes:**
+  - **PricingPage:** Comparison table now uses `overflow-x-auto` with `min-w-[480px]` so it scrolls horizontally on mobile instead of overflowing. Tier cards reduced padding `p-6 sm:p-8` and gap `gap-4 md:gap-8`.
+  - **HomePage:** Stats grid gap reduced `gap-2 sm:gap-4`, stat card padding reduced `p-4 sm:p-6`, stat text responsive `text-lg sm:text-2xl`.
+  - **ServicesPage:** All 7 service cards reduced padding `p-6 sm:p-8`, tactics grid gap `gap-4 md:gap-8`.
+  - LoginPage, Footer, BookCallPage, CheckoutPage, CaseStudiesPage all reviewed and confirmed responsive-safe.
+
+**Files modified (5):**
+- `src/app/App.tsx` — AnimatePresence + AnimatedRoutes component, route-group keying
+- `src/app/data/caseStudies.ts` — Complete rewrite of all 5 case studies
+- `src/app/pages/PricingPage.tsx` — Comparison table overflow-x-auto, tier card responsive padding/gap
+- `src/app/pages/HomePage.tsx` — Stats grid responsive gap, padding, text sizing
+- `src/app/pages/ServicesPage.tsx` — Service card responsive padding, tactics grid gap
+
+**Build:** Passes with zero errors
+**Phase 7 Status:** COMPLETE (all 7.1, 7.2, 7.3 items done except marketing copy review)
+
+**Left off:** Phase 7 UX polish complete. Remaining work: marketing copy review (7.2), remaining email templates (1.4), admin portal scaffold (Phase 5), booking calendar (Phase 6), testing & launch prep (Phase 8).
+
+---
+
 ### 2026-02-16 (Session 14) | Checkout Fix, UX Polish — Scroll-to-Top, Mobile Nav, Portal Sidebar
 
 **Focus:** Fix subscription checkout issue, add scroll-to-top on route changes, mobile portal sidebar, mobile nav improvements, pricing verification.

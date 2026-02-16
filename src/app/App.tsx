@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import { AuthProvider } from './contexts/AuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -58,6 +59,94 @@ function ScrollToTop() {
   return null;
 }
 
+// Group routes so internal navigation (e.g. portal tabs) doesn't trigger page transitions
+function getRouteGroup(pathname: string): string {
+  if (pathname.startsWith('/portal')) return '/portal';
+  if (pathname.startsWith('/onboarding')) return '/onboarding';
+  if (pathname.startsWith('/booking')) return '/booking';
+  if (pathname.startsWith('/checkout')) return '/checkout';
+  if (pathname.startsWith('/admin')) return '/admin';
+  return pathname;
+}
+
+function AnimatedRoutes() {
+  const location = useLocation();
+  const routeGroup = getRouteGroup(location.pathname);
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={routeGroup}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+      >
+        <Routes location={location}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/services/website-build" element={<WebsiteBuildPage />} />
+          <Route path="/services/google-business-profile" element={<GoogleBusinessProfilePage />} />
+          <Route path="/services/review-screener" element={<ReviewScreenerPage />} />
+          <Route path="/services/ai-chat-bot" element={<AIChatBotPage />} />
+          <Route path="/services/local-seo" element={<LocalSEOPage />} />
+          <Route path="/services/google-ads" element={<GoogleAdsPage />} />
+          <Route path="/services/analytics-dashboards" element={<AnalyticsDashboardsPage />} />
+          <Route path="/services/branding" element={<BrandingPage />} />
+          <Route path="/services/graphic-design" element={<GraphicDesignPage />} />
+          <Route path="/services/custom-crm" element={<CustomCRMPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/case-studies" element={<CaseStudiesPage />} />
+          <Route path="/design-system" element={<DesignSystemPage />} />
+
+          {/* Auth */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+
+          {/* Checkout Flow */}
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
+          <Route path="/checkout/create-account" element={<CreateAccountPage />} />
+
+          {/* Onboarding Flow (protected) */}
+          <Route path="/onboarding" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
+          <Route path="/onboarding/success" element={<ProtectedRoute><OnboardingSuccess /></ProtectedRoute>} />
+
+          {/* Portal (protected) */}
+          <Route path="/portal" element={<ProtectedRoute><PortalLayout /></ProtectedRoute>}>
+            <Route index element={<OverviewPage />} />
+            <Route path="analytics" element={<AnalyticsDashboard />} />
+            <Route path="analytics/page/:pageUrl" element={<PageDetailPage />} />
+            <Route path="analytics/keyword/:keyword" element={<KeywordDetailPage />} />
+            <Route path="services" element={<PortalServicesPage />} />
+            <Route path="services/:serviceId" element={<ServiceDetailPage />} />
+            <Route path="project" element={<ProjectPage />} />
+            <Route path="assets" element={<AssetsPage />} />
+            <Route path="notes" element={<NotesPage />} />
+            <Route path="messages" element={<MessagesPage />} />
+            <Route path="billing" element={<BillingPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+          </Route>
+
+          {/* Book a Call Flow */}
+          <Route path="/book-call" element={<BookCallPage />} />
+          <Route path="/booking/schedule" element={<ScheduleCallPage />} />
+          <Route path="/booking/confirmation" element={<BookingConfirmation />} />
+
+          {/* Admin Tools (protected, admin only) */}
+          <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/case-study-wizard" element={<ProtectedRoute requiredRole="admin"><CaseStudyWizard /></ProtectedRoute>} />
+
+          {/* 404 Catch-all */}
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -72,7 +161,7 @@ export default function App() {
               gridSize: 60,
               particleCount: 40,
               glowIntensity: 0.15,
-              styleVariant: 'galaxy', // Options: 'grid' | 'triangles' | 'galaxy'
+              styleVariant: 'galaxy',
               gridOpacity: 0.08,
               particleOpacity: 0.12,
             }}
@@ -81,66 +170,7 @@ export default function App() {
           {/* Content layer - sits above background */}
           <div className="relative" style={{ zIndex: 1 }}>
             <Navigation />
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/services" element={<ServicesPage />} />
-              <Route path="/services/website-build" element={<WebsiteBuildPage />} />
-              <Route path="/services/google-business-profile" element={<GoogleBusinessProfilePage />} />
-              <Route path="/services/review-screener" element={<ReviewScreenerPage />} />
-              <Route path="/services/ai-chat-bot" element={<AIChatBotPage />} />
-              <Route path="/services/local-seo" element={<LocalSEOPage />} />
-              <Route path="/services/google-ads" element={<GoogleAdsPage />} />
-              <Route path="/services/analytics-dashboards" element={<AnalyticsDashboardsPage />} />
-              <Route path="/services/branding" element={<BrandingPage />} />
-              <Route path="/services/graphic-design" element={<GraphicDesignPage />} />
-              <Route path="/services/custom-crm" element={<CustomCRMPage />} />
-              <Route path="/pricing" element={<PricingPage />} />
-              <Route path="/case-studies" element={<CaseStudiesPage />} />
-              <Route path="/design-system" element={<DesignSystemPage />} />
-
-              {/* Auth */}
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/reset-password" element={<ResetPasswordPage />} />
-              <Route path="/auth/callback" element={<AuthCallbackPage />} />
-
-              {/* Checkout Flow */}
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/checkout/success" element={<CheckoutSuccessPage />} />
-              <Route path="/checkout/create-account" element={<CreateAccountPage />} />
-
-              {/* Onboarding Flow (protected) */}
-              <Route path="/onboarding" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
-              <Route path="/onboarding/success" element={<ProtectedRoute><OnboardingSuccess /></ProtectedRoute>} />
-
-              {/* Portal (protected) */}
-              <Route path="/portal" element={<ProtectedRoute><PortalLayout /></ProtectedRoute>}>
-                <Route index element={<OverviewPage />} />
-                <Route path="analytics" element={<AnalyticsDashboard />} />
-                <Route path="analytics/page/:pageUrl" element={<PageDetailPage />} />
-                <Route path="analytics/keyword/:keyword" element={<KeywordDetailPage />} />
-                <Route path="services" element={<PortalServicesPage />} />
-                <Route path="services/:serviceId" element={<ServiceDetailPage />} />
-                <Route path="project" element={<ProjectPage />} />
-                <Route path="assets" element={<AssetsPage />} />
-                <Route path="notes" element={<NotesPage />} />
-                <Route path="messages" element={<MessagesPage />} />
-                <Route path="billing" element={<BillingPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-              </Route>
-
-              {/* Book a Call Flow */}
-              <Route path="/book-call" element={<BookCallPage />} />
-              <Route path="/booking/schedule" element={<ScheduleCallPage />} />
-              <Route path="/booking/confirmation" element={<BookingConfirmation />} />
-
-              {/* Admin Tools (protected, admin only) */}
-              <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
-              <Route path="/admin/case-study-wizard" element={<ProtectedRoute requiredRole="admin"><CaseStudyWizard /></ProtectedRoute>} />
-
-              {/* 404 Catch-all */}
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
+            <AnimatedRoutes />
             <Footer />
           </div>
         </div>

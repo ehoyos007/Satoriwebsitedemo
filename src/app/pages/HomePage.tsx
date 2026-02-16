@@ -98,7 +98,7 @@ export function HomePage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-12">
             {[
               { label: '+38% Calls', icon: Phone, color: 'cyan' },
               { label: '2.1× Form Leads', icon: TrendingUp, color: 'violet' },
@@ -111,11 +111,11 @@ export function HomePage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="group relative p-6 rounded-xl glass-panel hover:scale-105 transition-all"
+                className="group relative p-4 sm:p-6 rounded-xl glass-panel hover:scale-105 transition-all"
               >
                 <div className={`absolute inset-0 rounded-xl bg-gradient-to-br from-${stat.color}-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity`} />
                 <stat.icon className={`w-8 h-8 mx-auto mb-3 text-${stat.color}-400`} />
-                <div className="text-2xl relative z-10">{stat.label}</div>
+                <div className="text-lg sm:text-2xl relative z-10">{stat.label}</div>
               </motion.div>
             ))}
           </div>

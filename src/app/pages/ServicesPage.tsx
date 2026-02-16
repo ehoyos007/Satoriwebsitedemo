@@ -386,7 +386,7 @@ export function ServicesPage() {
               viewport={{ once: true }}
               className="relative"
             >
-              <div className="glass-panel p-8 rounded-2xl border border-white/10 bg-gradient-to-br from-violet-500/5 to-transparent">
+              <div className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/10 bg-gradient-to-br from-violet-500/5 to-transparent">
                 <div className="space-y-6">
                   <div className="flex items-center justify-between pb-4 border-b border-white/10">
                     <span className="text-zinc-400">Average Conversion Rate</span>
@@ -421,7 +421,7 @@ export function ServicesPage() {
               viewport={{ once: true }}
               className="order-2 lg:order-1"
             >
-              <div className="glass-panel p-8 rounded-2xl border border-white/10 bg-gradient-to-br from-cyan-500/5 to-transparent">
+              <div className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/10 bg-gradient-to-br from-cyan-500/5 to-transparent">
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500/20 to-violet-500/20 flex items-center justify-center border border-cyan-400/30 flex-shrink-0">
@@ -541,7 +541,7 @@ export function ServicesPage() {
               viewport={{ once: true }}
               className="relative"
             >
-              <div className="glass-panel p-8 rounded-2xl border border-white/10">
+              <div className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/10">
                 <h4 className="text-sm uppercase tracking-wider text-cyan-400 mb-6">Complete Stack Example</h4>
                 <div className="space-y-4">
                   {[
@@ -588,13 +588,13 @@ export function ServicesPage() {
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-4 md:gap-8">
             {/* Website Build */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="glass-panel p-8 rounded-2xl border border-white/10"
+              className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/10"
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 flex items-center justify-center border border-cyan-400/30">
@@ -618,7 +618,7 @@ export function ServicesPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="glass-panel p-8 rounded-2xl border border-white/10"
+              className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/10"
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/20 to-emerald-500/20 flex items-center justify-center border border-violet-400/30">
@@ -642,7 +642,7 @@ export function ServicesPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="glass-panel p-8 rounded-2xl border border-white/10"
+              className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/10"
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/5 flex items-center justify-center border border-amber-400/30">
@@ -666,7 +666,7 @@ export function ServicesPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
-              className="glass-panel p-8 rounded-2xl border border-white/10"
+              className="glass-panel p-6 sm:p-8 rounded-2xl border border-white/10"
             >
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-emerald-400/30">
@@ -690,7 +690,7 @@ export function ServicesPage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mt-8 glass-panel p-8 rounded-2xl border border-white/10"
+            className="mt-8 glass-panel p-6 sm:p-8 rounded-2xl border border-white/10"
           >
             <div className="flex items-center gap-3 mb-6">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 via-violet-500/20 to-emerald-500/20 flex items-center justify-center border border-cyan-400/30">

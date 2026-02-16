@@ -308,7 +308,7 @@ export function PricingPage() {
       {/* Pricing Tiers */}
       <section id="pricing-tiers" className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-4 md:gap-8">
             {pricingTiers.map((tier, index) => (
               <motion.div
                 key={tier.name}
@@ -316,7 +316,7 @@ export function PricingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className={`relative p-8 rounded-2xl ${
+                className={`relative p-6 sm:p-8 rounded-2xl ${
                   tier.highlighted
                     ? 'glass-panel border-2 border-cyan-400/50 shadow-2xl shadow-cyan-500/20 scale-105'
                     : 'glass-panel border border-white/5'
@@ -404,9 +404,9 @@ export function PricingPage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="glass-panel rounded-xl p-8 border border-white/5"
+            className="glass-panel rounded-xl p-4 sm:p-8 border border-white/5 overflow-x-auto"
           >
-            <div className="space-y-4">
+            <div className="space-y-4 min-w-[480px] sm:min-w-0">
               {[
                 { feature: 'Conversion-focused website', base: true, growth: true, scale: true },
                 { feature: 'Mobile-first design', base: true, growth: true, scale: true },

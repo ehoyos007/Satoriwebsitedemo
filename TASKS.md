@@ -1,7 +1,7 @@
 # TASKS.md - Satori Studios Website
 
 > Active task tracking. Organized by phase and priority.
-> Last updated: 2026-02-16 (end of session 14)
+> Last updated: 2026-02-16 (end of session 15)
 
 ---
 
@@ -234,23 +234,23 @@
 
 ## Phase 7: UX Polish
 
-### 7.1 Navigation Fixes (P1) -- MOSTLY COMPLETE
+### 7.1 Navigation Fixes (P1) -- COMPLETE
 - [x] Fix mobile hamburger menu interactions (backdrop close, scroll lock, escape key)
 - [x] Improve active states in navigation (underline animation on active route)
-- [ ] Smooth page transition animations
+- [x] Smooth page transition animations (AnimatePresence fade with route-group keys)
 - [x] Add scroll-to-top on route changes
 
-### 7.2 Content Updates (P1)
-- [ ] Replace fictional case studies with realistic or real content
+### 7.2 Content Updates (P1) -- MOSTLY COMPLETE
+- [x] Replace fictional case studies with realistic or real content (5 local service business case studies)
 - [ ] Review and update marketing copy accuracy
 - [x] Verify pricing displayed matches actual Stripe products (all 10 services match)
 
-### 7.3 Production Polish (P0) -- MOSTLY COMPLETE
+### 7.3 Production Polish (P0) -- COMPLETE
 - [x] Add loading states everywhere (buttons, pages, data fetches)
 - [x] Add empty states for all data-dependent views
 - [x] Add 404 page (styled NotFoundPage with catch-all route)
 - [x] Add error boundary at app root (ErrorBoundary with Refresh/Go Home)
-- [ ] Verify responsive design on all breakpoints
+- [x] Verify responsive design on all breakpoints (code audit + fixes for mobile spacing)
 - [x] Add meta tags / Open Graph tags for SEO and social sharing
 - [x] Add favicon and app manifest
 
