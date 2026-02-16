@@ -7,6 +7,39 @@
 
 ## Session Log
 
+### 2026-02-16 (Session 14) | Checkout Fix, UX Polish — Scroll-to-Top, Mobile Nav, Portal Sidebar
+
+**Focus:** Fix subscription checkout issue, add scroll-to-top on route changes, mobile portal sidebar, mobile nav improvements, pricing verification.
+
+**Completed:**
+- **Subscription checkout investigation:** Tested subscription checkout for GBP Optimization ($197/mo) in browser — redirect to Stripe works, page loads correctly with payment form. Issue appears intermittent/resolved.
+- **Defensive checkout fix:** Added error handling for missing `data.url` from API response — previously the spinner would hang forever if URL was falsy. Now throws explicit error. Removed unused `loadStripe` import.
+- **Scroll-to-top on route changes:** Added `ScrollToTop` component in App.tsx — uses `useLocation()` + `useEffect` to scroll to top on every pathname change. Verified working.
+- **Mobile portal sidebar:** Rewrote `PortalLayout.tsx` — desktop sidebar unchanged (sticky, always visible). Mobile: sidebar hidden, replaced with collapsible toggle bar showing current page name + icon. AnimatePresence for smooth expand/collapse. Links close the menu on tap.
+- **Mobile hamburger menu fixes:** Updated `Navigation.tsx`:
+  - Added dark backdrop overlay behind mobile menu (tap to close)
+  - Body scroll lock when menu is open (`overflow: hidden`)
+  - Escape key closes the menu
+- **Pricing verification:** Compared all 10 services across PricingPage and service detail pages against Stripe prices — all match exactly (website $999.95, GBP $1,495/$197mo, Review Screener $997/$297mo, etc.)
+- **Payment failure email:** Triggered `stripe trigger invoice.payment_failed` — event delivered to production webhook. Synthetic event lacks subscription parent (by design), so email path not exercised. Code review confirms logic is correct for real subscription failures.
+
+**Files modified (3):**
+- `src/app/App.tsx` — ScrollToTop component + useLocation/useEffect imports
+- `src/app/components/Navigation.tsx` — backdrop, scroll lock, escape key
+- `src/app/pages/portal/PortalLayout.tsx` — mobile collapsible sidebar
+- `src/app/pages/checkout/CheckoutPage.tsx` — defensive URL check, remove unused loadStripe
+
+**Commits:**
+- `4ee577b` — Fix checkout spinner hanging when Stripe URL is missing
+- `4677a83` — Add scroll-to-top, mobile portal sidebar, and mobile nav fixes
+
+**Build:** Passes with zero errors
+**Deploy:** Pushed to main, Vercel auto-deploying
+
+**Left off:** UX polish items complete (scroll-to-top, mobile portal sidebar, mobile nav, pricing verification). Remaining work: page transition animations, fictional case study replacement, responsive design full verification, remaining email templates, admin portal.
+
+---
+
 ### 2026-02-16 (Session 13) | Transactional Emails — Order Confirmation, Admin Notification, Payment Failure
 
 **Focus:** Add transactional emails to the Stripe webhook pipeline so customers get order confirmation after purchase and payment failure alerts when subscriptions fail.

@@ -1,7 +1,7 @@
 # TASKS.md - Satori Studios Website
 
 > Active task tracking. Organized by phase and priority.
-> Last updated: 2026-02-16 (end of session 13)
+> Last updated: 2026-02-16 (end of session 14)
 
 ---
 
@@ -161,7 +161,7 @@
 - [x] Add 12 nested routes: overview, analytics, analytics/page/:pageUrl, analytics/keyword/:keyword, services, services/:serviceId, project, assets, notes, messages, billing, settings
 - [x] Sidebar active state via `useLocation()` pathname matching
 - [x] Deep-linking and browser back/forward navigation works
-- [ ] Fix mobile portal navigation for sidebar (responsive collapse)
+- [x] Fix mobile portal navigation for sidebar (collapsible toggle with current page indicator)
 - [ ] Add breadcrumbs for deep views (e.g., service detail)
 - [ ] Fix page transition animations (currently jarring)
 
@@ -234,16 +234,16 @@
 
 ## Phase 7: UX Polish
 
-### 7.1 Navigation Fixes (P1)
-- [ ] Fix mobile hamburger menu interactions
-- [ ] Improve active states in navigation
+### 7.1 Navigation Fixes (P1) -- MOSTLY COMPLETE
+- [x] Fix mobile hamburger menu interactions (backdrop close, scroll lock, escape key)
+- [x] Improve active states in navigation (underline animation on active route)
 - [ ] Smooth page transition animations
-- [ ] Add scroll-to-top on route changes
+- [x] Add scroll-to-top on route changes
 
 ### 7.2 Content Updates (P1)
 - [ ] Replace fictional case studies with realistic or real content
 - [ ] Review and update marketing copy accuracy
-- [ ] Verify pricing displayed matches actual Stripe products
+- [x] Verify pricing displayed matches actual Stripe products (all 10 services match)
 
 ### 7.3 Production Polish (P0) -- MOSTLY COMPLETE
 - [x] Add loading states everywhere (buttons, pages, data fetches)
