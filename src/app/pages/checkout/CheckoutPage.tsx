@@ -35,23 +35,37 @@ export function CheckoutPage() {
 
   // Fetch service from Supabase with retry
   useEffect(() => {
+    let cancelled = false;
+
     async function fetchService() {
       setLoading(true);
       setError(null);
-      const { data, error: fetchError } = await retryQuery(() =>
-        supabase.from('services').select('*').eq('slug', serviceSlug).single()
-      );
+      try {
+        const { data, error: fetchError } = await retryQuery(() =>
+          supabase.from('services').select('*').eq('slug', serviceSlug).single()
+        );
 
-      if (fetchError || !data) {
-        setError('Service not found. Please try again.');
+        if (cancelled) return;
+
+        if (fetchError || !data) {
+          setError('Service not found. Please try again.');
+          setLoading(false);
+          return;
+        }
+
+        setService(data as ServiceData);
         setLoading(false);
-        return;
+      } catch (err) {
+        if (cancelled) return;
+        // Ignore AbortErrors (component unmounted / request cancelled)
+        if (err instanceof DOMException && err.name === 'AbortError') return;
+        setError('Failed to load service. Please try again.');
+        setLoading(false);
       }
-
-      setService(data as ServiceData);
-      setLoading(false);
     }
     fetchService();
+
+    return () => { cancelled = true; };
   }, [serviceSlug]);
 
   const dismissCanceled = () => {
