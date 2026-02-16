@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronDown, LogIn, Menu, X, User, LogOut, LayoutDashboard } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import logoImage from '@/assets/satori-logo.png';
 import { useAuth } from '@/app/contexts/AuthContext';
 import {
@@ -31,6 +31,25 @@ export function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileMenuOpen]);
+
+  // Close mobile menu on Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileMenuOpen(false);
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
 
   const handleDropdownEnter = () => {
     if (dropdownTimeoutRef.current) {
@@ -242,11 +261,20 @@ export function Navigation() {
       {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
+          <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 top-16 bg-black/60 md:hidden z-40"
+            onClick={() => setMobileMenuOpen(false)}
+          />
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden border-t border-white/5 glass-panel overflow-hidden"
+            className="md:hidden border-t border-white/5 glass-panel overflow-hidden relative z-50"
           >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 space-y-3">
               {/* Mobile Nav Items */}
@@ -369,6 +397,7 @@ export function Navigation() {
               </div>
             </div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
     </motion.nav>
