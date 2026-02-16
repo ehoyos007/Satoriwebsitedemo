@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Calendar,
   Upload,
@@ -18,6 +18,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '@/app/contexts/AuthContext';
 import { AddServicesView } from './AddServicesView';
 import { ServiceDetailView } from './ServiceDetailView';
 import { ServiceCheckout } from './ServiceCheckout';
@@ -26,6 +27,8 @@ import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { AnalyticsSnapshot } from './AnalyticsSnapshot';
 
 export function PortalDashboard() {
+  const navigate = useNavigate();
+  const { profile, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [checkoutService, setCheckoutService] = useState<{
@@ -128,11 +131,15 @@ export function PortalDashboard() {
                 <h3 className="text-sm uppercase tracking-wider text-zinc-500 mb-2">Client Portal</h3>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500/20 to-violet-500/20 flex items-center justify-center border border-cyan-400/30">
-                    <span className="text-sm">JD</span>
+                    <span className="text-sm">
+                      {profile?.full_name
+                        ? profile.full_name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
+                        : '?'}
+                    </span>
                   </div>
                   <div>
-                    <div className="font-medium">John Doe</div>
-                    <div className="text-sm text-zinc-500">Acme Plumbing</div>
+                    <div className="font-medium">{profile?.full_name || 'User'}</div>
+                    <div className="text-sm text-zinc-500">{profile?.email || ''}</div>
                   </div>
                 </div>
               </div>
@@ -175,7 +182,10 @@ export function PortalDashboard() {
               </nav>
 
               <div className="mt-6 pt-6 border-t border-white/10">
-                <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900/50 transition-all">
+                <button
+                  onClick={async () => { await signOut(); navigate('/'); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900/50 transition-all"
+                >
                   <LogOut className="w-5 h-5" />
                   <span>Sign Out</span>
                 </button>
@@ -192,7 +202,7 @@ export function PortalDashboard() {
                   <h1 className="text-4xl mb-2">
                     Welcome back,{' '}
                     <span className="bg-gradient-to-r from-cyan-400 to-violet-400 text-transparent bg-clip-text">
-                      John
+                      {profile?.full_name?.split(' ')[0] || 'there'}
                     </span>
                   </h1>
                   <p className="text-zinc-400">Here's what's happening with your website build</p>

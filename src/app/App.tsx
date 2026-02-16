@@ -1,4 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { HomePage } from './pages/HomePage';
 import { ServicesPage } from './pages/ServicesPage';
 import { PricingPage } from './pages/PricingPage';
@@ -23,6 +25,9 @@ import { BookCallPage } from './pages/booking/BookCallPage';
 import { ScheduleCallPage } from './pages/booking/ScheduleCallPage';
 import { BookingConfirmation } from './pages/booking/BookingConfirmation';
 import { LoginPage } from './pages/LoginPage';
+import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
+import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
+import { AuthCallbackPage } from './pages/auth/AuthCallbackPage';
 import { CaseStudyWizard } from './pages/admin/CaseStudyWizard';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { Navigation } from './components/Navigation';
@@ -32,66 +37,71 @@ import { AnimatedGalaxyBackground } from './components/AnimatedGalaxyBackground'
 export default function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-[#0a0a0f] text-white relative">
-        {/* Animated Galaxy Background - spans entire site */}
-        <AnimatedGalaxyBackground
-          config={{
-            speed: 0.3,
-            gridSize: 60,
-            particleCount: 40,
-            glowIntensity: 0.15,
-            styleVariant: 'galaxy', // Options: 'grid' | 'triangles' | 'galaxy'
-            gridOpacity: 0.08,
-            particleOpacity: 0.12,
-          }}
-        />
-        
-        {/* Content layer - sits above background */}
-        <div className="relative" style={{ zIndex: 1 }}>
-          <Navigation />
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/services" element={<ServicesPage />} />
-            <Route path="/services/website-build" element={<WebsiteBuildPage />} />
-            <Route path="/services/google-business-profile" element={<GoogleBusinessProfilePage />} />
-            <Route path="/services/review-screener" element={<ReviewScreenerPage />} />
-            <Route path="/services/ai-chat-bot" element={<AIChatBotPage />} />
-            <Route path="/services/local-seo" element={<LocalSEOPage />} />
-            <Route path="/services/google-ads" element={<GoogleAdsPage />} />
-            <Route path="/services/analytics-dashboards" element={<AnalyticsDashboardsPage />} />
-            <Route path="/services/branding" element={<BrandingPage />} />
-            <Route path="/services/graphic-design" element={<GraphicDesignPage />} />
-            <Route path="/services/custom-crm" element={<CustomCRMPage />} />
-            <Route path="/pricing" element={<PricingPage />} />
-            <Route path="/case-studies" element={<CaseStudiesPage />} />
-            <Route path="/design-system" element={<DesignSystemPage />} />
-            
-            {/* Login */}
-            <Route path="/login" element={<LoginPage />} />
-            
-            {/* Checkout Flow */}
-            <Route path="/checkout" element={<CheckoutPage />} />
-            <Route path="/checkout/create-account" element={<CreateAccountPage />} />
-            
-            {/* Onboarding Flow */}
-            <Route path="/onboarding" element={<OnboardingWizard />} />
-            <Route path="/onboarding/success" element={<OnboardingSuccess />} />
-            
-            {/* Portal */}
-            <Route path="/portal" element={<PortalDashboard />} />
-            
-            {/* Book a Call Flow */}
-            <Route path="/book-call" element={<BookCallPage />} />
-            <Route path="/booking/schedule" element={<ScheduleCallPage />} />
-            <Route path="/booking/confirmation" element={<BookingConfirmation />} />
+      <AuthProvider>
+        <div className="min-h-screen bg-[#0a0a0f] text-white relative">
+          {/* Animated Galaxy Background - spans entire site */}
+          <AnimatedGalaxyBackground
+            config={{
+              speed: 0.3,
+              gridSize: 60,
+              particleCount: 40,
+              glowIntensity: 0.15,
+              styleVariant: 'galaxy', // Options: 'grid' | 'triangles' | 'galaxy'
+              gridOpacity: 0.08,
+              particleOpacity: 0.12,
+            }}
+          />
 
-            {/* Admin Tools */}
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/case-study-wizard" element={<CaseStudyWizard />} />
-          </Routes>
-          <Footer />
+          {/* Content layer - sits above background */}
+          <div className="relative" style={{ zIndex: 1 }}>
+            <Navigation />
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/services" element={<ServicesPage />} />
+              <Route path="/services/website-build" element={<WebsiteBuildPage />} />
+              <Route path="/services/google-business-profile" element={<GoogleBusinessProfilePage />} />
+              <Route path="/services/review-screener" element={<ReviewScreenerPage />} />
+              <Route path="/services/ai-chat-bot" element={<AIChatBotPage />} />
+              <Route path="/services/local-seo" element={<LocalSEOPage />} />
+              <Route path="/services/google-ads" element={<GoogleAdsPage />} />
+              <Route path="/services/analytics-dashboards" element={<AnalyticsDashboardsPage />} />
+              <Route path="/services/branding" element={<BrandingPage />} />
+              <Route path="/services/graphic-design" element={<GraphicDesignPage />} />
+              <Route path="/services/custom-crm" element={<CustomCRMPage />} />
+              <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/case-studies" element={<CaseStudiesPage />} />
+              <Route path="/design-system" element={<DesignSystemPage />} />
+
+              {/* Auth */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
+
+              {/* Checkout Flow */}
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/checkout/create-account" element={<CreateAccountPage />} />
+
+              {/* Onboarding Flow (protected) */}
+              <Route path="/onboarding" element={<ProtectedRoute><OnboardingWizard /></ProtectedRoute>} />
+              <Route path="/onboarding/success" element={<ProtectedRoute><OnboardingSuccess /></ProtectedRoute>} />
+
+              {/* Portal (protected) */}
+              <Route path="/portal" element={<ProtectedRoute><PortalDashboard /></ProtectedRoute>} />
+
+              {/* Book a Call Flow */}
+              <Route path="/book-call" element={<BookCallPage />} />
+              <Route path="/booking/schedule" element={<ScheduleCallPage />} />
+              <Route path="/booking/confirmation" element={<BookingConfirmation />} />
+
+              {/* Admin Tools (protected, admin only) */}
+              <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+              <Route path="/admin/case-study-wizard" element={<ProtectedRoute requiredRole="admin"><CaseStudyWizard /></ProtectedRoute>} />
+            </Routes>
+            <Footer />
+          </div>
         </div>
-      </div>
+      </AuthProvider>
     </Router>
   );
 }

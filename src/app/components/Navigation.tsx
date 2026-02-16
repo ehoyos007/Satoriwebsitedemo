@@ -1,11 +1,32 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, LogIn, Menu, X } from 'lucide-react';
+import { ChevronDown, LogIn, Menu, X, User, LogOut, LayoutDashboard } from 'lucide-react';
 import { useState, useRef } from 'react';
 import logoImage from '@/assets/satori-logo.png';
+import { useAuth } from '@/app/contexts/AuthContext';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/app/components/ui/dropdown-menu';
+
+function getInitials(name: string | null | undefined): string {
+  if (!name) return '?';
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
 
 export function Navigation() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, profile, signOut } = useAuth();
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
@@ -23,6 +44,11 @@ export function Navigation() {
     dropdownTimeoutRef.current = setTimeout(() => {
       setServicesOpen(false);
     }, 150);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
   };
 
   const navItems = [
@@ -81,7 +107,7 @@ export function Navigation() {
                 )}
               </Link>
             ))}
-            
+
             {/* Services Dropdown */}
             <div
               className="relative"
@@ -108,7 +134,7 @@ export function Navigation() {
                   />
                 )}
               </button>
-              
+
               {servicesOpen && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -138,13 +164,51 @@ export function Navigation() {
 
           {/* Desktop CTAs */}
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              to="/login"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all text-zinc-300 hover:text-white"
-            >
-              <LogIn className="w-4 h-4" />
-              <span className="hidden sm:inline">Client Login</span>
-            </Link>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all text-zinc-300 hover:text-white">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-500/30 to-violet-500/30 flex items-center justify-center border border-cyan-400/30 text-xs">
+                      {getInitials(profile?.full_name)}
+                    </div>
+                    <span className="hidden lg:inline text-sm max-w-[120px] truncate">
+                      {profile?.full_name || user.email}
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-zinc-900 border-white/10 text-white">
+                  <DropdownMenuLabel className="text-zinc-400 font-normal">
+                    <div className="text-sm text-white">{profile?.full_name || 'User'}</div>
+                    <div className="text-xs text-zinc-500 truncate">{user.email}</div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem
+                    className="text-zinc-300 focus:text-white focus:bg-cyan-500/10 cursor-pointer"
+                    onClick={() => navigate('/portal')}
+                  >
+                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    Portal
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="bg-white/10" />
+                  <DropdownMenuItem
+                    className="text-zinc-300 focus:text-white focus:bg-red-500/10 cursor-pointer"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link
+                to="/login"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all text-zinc-300 hover:text-white"
+              >
+                <LogIn className="w-4 h-4" />
+                <span className="hidden sm:inline">Client Login</span>
+              </Link>
+            )}
             <Link
               to="/checkout"
               className="group relative px-5 py-2.5 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/50"
@@ -251,14 +315,43 @@ export function Navigation() {
 
               {/* Mobile CTAs */}
               <div className="pt-3 border-t border-white/5 space-y-3">
-                <Link
-                  to="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all text-zinc-300 hover:text-white"
-                >
-                  <LogIn className="w-4 h-4" />
-                  Client Login
-                </Link>
+                {user ? (
+                  <>
+                    <div className="flex items-center gap-3 px-4 py-2 text-zinc-400">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500/30 to-violet-500/30 flex items-center justify-center border border-cyan-400/30 text-xs text-white">
+                        {getInitials(profile?.full_name)}
+                      </div>
+                      <div>
+                        <div className="text-sm text-white">{profile?.full_name || 'User'}</div>
+                        <div className="text-xs text-zinc-500">{user.email}</div>
+                      </div>
+                    </div>
+                    <Link
+                      to="/portal"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all text-zinc-300 hover:text-white"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      Portal
+                    </Link>
+                    <button
+                      onClick={() => { handleSignOut(); setMobileMenuOpen(false); }}
+                      className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg border border-zinc-700 hover:border-red-400/50 hover:bg-red-500/5 transition-all text-zinc-300 hover:text-white"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all text-zinc-300 hover:text-white"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Client Login
+                  </Link>
+                )}
                 <Link
                   to="/checkout"
                   onClick={() => setMobileMenuOpen(false)}
