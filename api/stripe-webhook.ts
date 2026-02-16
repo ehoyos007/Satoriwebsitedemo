@@ -1,5 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Stripe from 'stripe'
+import { sendEmail } from './_lib/email'
+import { orderConfirmationEmail, adminPurchaseEmail, paymentFailureEmail } from './_lib/email-templates'
 
 export const config = {
   api: { bodyParser: false },
@@ -189,6 +191,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }),
           })
           console.log(`Project created for client ${clientId}, service ${serviceSlug}`)
+
+          // 6. Send order confirmation + admin notification (fire-and-forget)
+          if (customerEmail) {
+            const confirmation = orderConfirmationEmail({
+              serviceName: service.name,
+              amountCents: amountCents,
+              sessionId: session.id,
+            })
+            sendEmail({ to: customerEmail, ...confirmation })
+              .then(r => r.success
+                ? console.log(`Order confirmation sent to ${customerEmail}`)
+                : console.error(`Order confirmation failed: ${r.error}`))
+          }
+
+          const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL
+          if (adminEmail) {
+            const adminNotif = adminPurchaseEmail({
+              serviceName: service.name,
+              amountCents: amountCents,
+              customerEmail: customerEmail || 'unknown',
+              clientId: clientId!,
+              sessionId: session.id,
+            })
+            sendEmail({ to: adminEmail, ...adminNotif })
+              .then(r => r.success
+                ? console.log(`Admin purchase notification sent`)
+                : console.error(`Admin notification failed: ${r.error}`))
+          }
         } else {
           console.error(`Could not create client or order for ${customerEmail}`)
         }
@@ -282,6 +312,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             method: 'PATCH',
             body: JSON.stringify({ status: 'past_due' }),
           })
+
+          // Send payment failure email to customer (fire-and-forget)
+          const customerId = typeof invoice.customer === 'string'
+            ? invoice.customer
+            : invoice.customer?.id
+          if (customerId) {
+            // Look up client email and service name
+            const subs = await supabaseAdmin(
+              `subscriptions?stripe_subscription_id=eq.${subId}&select=client_id,service:services(name)`
+            )
+            const sub = subs?.[0]
+            if (sub?.client_id) {
+              const clients = await supabaseAdmin(
+                `clients?id=eq.${sub.client_id}&select=business_email`
+              )
+              const clientEmail = clients?.[0]?.business_email
+              const serviceName = sub.service?.name || 'your service'
+              if (clientEmail) {
+                const failureEmail = paymentFailureEmail({
+                  serviceName,
+                  customerEmail: clientEmail,
+                })
+                sendEmail({ to: clientEmail, ...failureEmail })
+                  .then(r => r.success
+                    ? console.log(`Payment failure email sent to ${clientEmail}`)
+                    : console.error(`Payment failure email failed: ${r.error}`))
+              }
+            }
+          }
         }
         break
       }

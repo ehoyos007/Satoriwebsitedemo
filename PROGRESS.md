@@ -7,6 +7,45 @@
 
 ## Session Log
 
+### 2026-02-16 (Session 13) | Transactional Emails — Order Confirmation, Admin Notification, Payment Failure
+
+**Focus:** Add transactional emails to the Stripe webhook pipeline so customers get order confirmation after purchase and payment failure alerts when subscriptions fail.
+
+**Completed:**
+- Created shared email helper `api/_lib/email.ts`:
+  - Wraps Resend REST API in a reusable `sendEmail()` function
+  - Never throws — returns `{ success, error }` for safe fire-and-forget usage
+  - Uses `RESEND_API_KEY` and `RESEND_FROM_EMAIL` env vars (already configured)
+- Created email templates `api/_lib/email-templates.ts`:
+  - `orderConfirmationEmail()` — dark theme, service/amount/order summary, next steps, portal CTA
+  - `adminPurchaseEmail()` — plain style, service/amount/customer/client ID/Stripe link
+  - `paymentFailureEmail()` — red-themed alert, retry instructions, billing portal CTA
+  - Shared `baseLayout()` wrapper matching existing onboarding email styling
+- Modified `api/stripe-webhook.ts`:
+  - `checkout.session.completed`: after order+project creation, sends order confirmation to customer + admin purchase notification (fire-and-forget `.then()`)
+  - `invoice.payment_failed`: after marking subscription `past_due`, looks up client email via subscription→client join and sends payment failure email (fire-and-forget)
+  - `_lib` prefix ensures Vercel doesn't expose helper files as API routes
+
+**Design decisions:**
+- Fire-and-forget `.then()` pattern — emails never block the webhook's `200` response to Stripe
+- No separate subscription email — `checkout.session.completed` and `customer.subscription.created` fire together for recurring purchases; only send order confirmation to avoid double-emailing
+- Template functions return `{ subject, html }` which spread directly into `sendEmail()`
+
+**Files created (2):**
+- `api/_lib/email.ts`
+- `api/_lib/email-templates.ts`
+
+**Files modified (1):**
+- `api/stripe-webhook.ts` (added imports + email sends in 2 webhook handlers)
+
+**Build:** Passes with zero errors
+
+**Remaining manual step:** Configure Supabase Dashboard SMTP (host: `smtp.resend.com`, port 587, user: `resend`, pass: API key) so auth emails (password reset, magic links) come from `noreply@satori-labs.cloud`.
+
+**Left off:** Transactional emails implemented. Next priorities: deploy + test with Stripe test events, configure Supabase SMTP, mobile portal sidebar, remaining email templates (onboarding reminders, project updates, monthly report).
+
+---
+
 ### 2026-02-16 (Session 12) | Meta Tags, Open Graph, Favicon & App Manifest
 
 **Focus:** Production polish — SEO meta tags, Open Graph/Twitter cards, favicon, apple-touch-icon, web app manifest
@@ -51,9 +90,21 @@
 - `PortalLayout.tsx`, `ServicePageTemplate.tsx`
 - `WebsiteBuildPage.tsx`, `ReviewScreenerPage.tsx`, `GoogleBusinessProfilePage.tsx`
 
+**Bug fix — "Service Not Found" on checkout page:**
+- User reported the "Buy Website" header CTA led to "Service Not Found" error
+- Root cause: `@supabase/supabase-js` v2.95 calls `getSession()` (which uses `navigator.locks.request()`) on every REST query via `fetchWithAuth`. With multiple Satori tabs open, Navigator Lock contention causes AbortErrors that propagate through the entire fetch chain, crashing all data queries.
+- Fix attempt 1 (commit d29b2f0): Custom lock with `navigator.locks.request()` + try/catch fallback → deployed but page hung because lock waited indefinitely without timeout
+- Fix attempt 2 (commit a679ffe): No-op lock `async (_name, _acquireTimeout, fn) => await fn()` — bypasses Navigator Locks entirely. Worst case: duplicate token refreshes across tabs, harmless at our scale (10-50 users)
+- Also added AbortError try/catch + cancelled flag cleanup in CheckoutPage useEffect for defense-in-depth
+- Verified: checkout page loads correctly with 3+ Satori tabs open in production
+
+**Files modified (bug fix):**
+- `src/app/lib/supabase.ts` — no-op lock bypass for Navigator Lock AbortError
+- `src/app/pages/checkout/CheckoutPage.tsx` — AbortError catch + cancelled flag
+
 **Build:** Passes with zero errors
 
-**Left off:** Meta tags, OG tags, favicons, and manifest complete. Remaining production polish: responsive design verification. Next priorities: mobile portal sidebar, email templates, testing.
+**Left off:** Meta tags, OG tags, favicons, manifest, and Navigator Lock bug fix all complete and deployed. Remaining production polish: responsive design verification. Next priorities: mobile portal sidebar, email templates, testing.
 
 ---
 
@@ -610,4 +661,4 @@ Portal loads → fetches orders/subscriptions via RLS → shows active services
 | -- | Pending Client Linking | COMPLETE (trigger auto-links on signup) |
 | -- | Portal Upsell → Stripe | WIRED (reuses checkout page + Stripe hosted checkout) |
 | -- | Onboarding Wizard Backend | COMPLETE (form state, validation, auto-save, file uploads, scheduling, emails, E2E verified) |
-| -- | Email System (Resend) | PARTIAL (onboarding welcome + admin notification done) |
+| -- | Email System (Resend) | MOSTLY COMPLETE (onboarding, order confirmation, admin notification, payment failure done) |

@@ -1,7 +1,7 @@
 # TASKS.md - Satori Studios Website
 
 > Active task tracking. Organized by phase and priority.
-> Last updated: 2026-02-16 (end of session 9)
+> Last updated: 2026-02-16 (end of session 13)
 
 ---
 
@@ -55,17 +55,23 @@
 - [ ] Set up preview deployments on PRs
 - [ ] Create staging environment with separate Supabase/Stripe configs
 
-### 1.4 Email System (P1) -- PARTIAL
+### 1.4 Email System (P1) -- MOSTLY COMPLETE
 - [x] Set up Resend account and verify domain (DNS records in Vercel)
 - [x] Set Vercel env vars: RESEND_API_KEY, RESEND_FROM_EMAIL, ADMIN_NOTIFICATION_EMAIL
 - [x] Create onboarding welcome email (styled HTML via Resend REST API)
 - [x] Create admin notification email on new client onboarding
+- [x] Create shared email helper (`api/_lib/email.ts`) — reusable sendEmail() wrapping Resend REST API
+- [x] Create email templates file (`api/_lib/email-templates.ts`) — dark theme base layout + 3 templates
+- [x] Create order confirmation email (customer) — service, amount, next steps, portal CTA
+- [x] Create admin purchase notification email — service, amount, customer, Stripe session link
+- [x] Create payment failure email (customer) — alert, retry instructions, billing portal CTA
+- [x] Wire order confirmation + admin notification to `checkout.session.completed` webhook (fire-and-forget)
+- [x] Wire payment failure email to `invoice.payment_failed` webhook (fire-and-forget)
 - [ ] Create email templates: signup confirmation, password reset, email verification
-- [ ] Create email templates: order confirmation, payment receipt, subscription update
 - [ ] Create email templates: onboarding reminders, getting-started guide
 - [ ] Create email templates: project updates, milestone notifications
 - [ ] Create email template: monthly report
-- [ ] Wire up Supabase Auth to send emails via Resend (custom SMTP)
+- [ ] Wire up Supabase Auth to send emails via Resend (custom SMTP — manual Dashboard config)
 
 ---
 
@@ -108,14 +114,14 @@
 - [x] Redirect to onboarding wizard after account creation (CheckoutSuccessPage smart routing)
 - [x] Store order record in Supabase (webhook creates order with service, amount, status, session ID)
 - [x] Activity log entry on purchase
-- [ ] Send order confirmation email via Resend
+- [x] Send order confirmation email via Resend (wired in stripe-webhook.ts)
 
 ### 3.2 Portal Upsell Checkout (P0) -- WIRED
 - [x] Wire "Add Services" flow in portal to Stripe (navigates to /checkout?service=<slug>)
 - [x] Create Stripe Checkout Session for add-on services (reuses existing create-checkout-session API)
 - [x] Handle subscription creation for monthly services (webhook already handles subscription events)
 - [x] Update client's active services in Supabase on payment success (webhook creates project, portal fetches real orders/subs)
-- [ ] Send purchase confirmation email
+- [x] Send purchase confirmation email (shared with checkout.session.completed handler)
 
 ### 3.3 Error Handling (P0) -- COMPLETE
 - [x] Add error boundaries around app (global ErrorBoundary with recovery UI)
