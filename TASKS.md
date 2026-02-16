@@ -97,20 +97,20 @@
 
 ## Phase 3: Payment & Checkout Flow
 
-### 3.1 Checkout Integration (P0) -- MOSTLY COMPLETE
+### 3.1 Checkout Integration (P0) -- COMPLETE
 - [x] Wire checkout page to Stripe (Checkout Session via `api/create-checkout-session.ts`)
 - [x] Handle payment success callback (CheckoutSuccessPage at `/checkout/success`)
 - [x] Auto-create pending client + order on payment (webhook handles both new and existing users)
-- [ ] Link pending client to profile on account signup
+- [x] Link pending client to profile on account signup (migration 20260216000004 — handle_new_user trigger)
 - [ ] Redirect to onboarding wizard after account creation
 - [x] Store order record in Supabase (webhook creates order with service, amount, status, session ID)
 - [x] Activity log entry on purchase
 - [ ] Send order confirmation email via Resend
 
-### 3.2 Portal Upsell Checkout (P0)
-- [ ] Wire "Add Services" flow in portal to Stripe
-- [ ] Create Stripe Checkout Session for add-on services
-- [ ] Handle subscription creation for monthly services
+### 3.2 Portal Upsell Checkout (P0) -- WIRED
+- [x] Wire "Add Services" flow in portal to Stripe (navigates to /checkout?service=<slug>)
+- [x] Create Stripe Checkout Session for add-on services (reuses existing create-checkout-session API)
+- [x] Handle subscription creation for monthly services (webhook already handles subscription events)
 - [ ] Update client's active services in Supabase on payment success
 - [ ] Send purchase confirmation email
 

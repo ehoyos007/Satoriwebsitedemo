@@ -21,8 +21,6 @@ import { useState } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { AddServicesView } from './AddServicesView';
 import { ServiceDetailView } from './ServiceDetailView';
-import { ServiceCheckout } from './ServiceCheckout';
-import { ServiceConfirmation } from './ServiceConfirmation';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
 import { AnalyticsSnapshot } from './AnalyticsSnapshot';
 
@@ -31,14 +29,7 @@ export function PortalDashboard() {
   const { profile, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
-  const [checkoutService, setCheckoutService] = useState<{
-    id: string;
-    name: string;
-    price: string;
-    notes: string;
-  } | null>(null);
-  const [showConfirmation, setShowConfirmation] = useState<{ serviceName: string } | null>(null);
-  const [purchasedServices, setPurchasedServices] = useState<string[]>([]);
+  const [purchasedServices] = useState<string[]>([]);
 
   const handleSelectService = (serviceId: string) => {
     setSelectedServiceId(serviceId);
@@ -48,43 +39,22 @@ export function PortalDashboard() {
     setSelectedServiceId(null);
   };
 
-  const handlePurchaseService = (serviceId: string, notes: string) => {
-    // Map service IDs to names and prices
-    const serviceMap: Record<string, { name: string; price: string }> = {
-      gbp: { name: 'Google Business Profile Optimization', price: '$1,495' },
-      reviews: { name: 'Review Screener', price: '$1,200' },
-      chatbot: { name: 'AI Chat Bot', price: '$1,800' },
-      'local-seo': { name: 'Local SEO + On-Page SEO', price: '$2,500' },
-      'google-ads': { name: 'Google Ads / Search Marketing', price: '$3,000' },
-      analytics: { name: 'Analytics + Reporting Dashboards', price: '$1,500' },
-      branding: { name: 'Branding / Identity Design', price: '$2,500' },
-      'graphic-design': { name: 'Graphic Design + Print Assets', price: '$800' },
-      crm: { name: 'Custom CRM + Automations', price: '$5,000' },
-    };
-
-    const service = serviceMap[serviceId];
-    if (service) {
-      setCheckoutService({
-        id: serviceId,
-        name: service.name,
-        price: service.price,
-        notes,
-      });
-    }
+  // Map portal service IDs to Supabase service slugs
+  const portalToSlug: Record<string, string> = {
+    gbp: 'gbp-optimization',
+    reviews: 'review-screener',
+    chatbot: 'ai-chat-bot',
+    'local-seo': 'local-seo',
+    'google-ads': 'google-ads',
+    analytics: 'analytics-dashboards',
+    branding: 'branding',
+    'graphic-design': 'graphic-design',
+    crm: 'custom-crm',
   };
 
-  const handleConfirmPurchase = () => {
-    if (checkoutService) {
-      setPurchasedServices([...purchasedServices, checkoutService.id]);
-      setShowConfirmation({ serviceName: checkoutService.name });
-      setCheckoutService(null);
-      setSelectedServiceId(null);
-    }
-  };
-
-  const handleCloseConfirmation = () => {
-    setShowConfirmation(null);
-    setActiveTab('overview');
+  const handlePurchaseService = (serviceId: string, _notes: string) => {
+    const slug = portalToSlug[serviceId] || serviceId;
+    navigate(`/checkout?service=${slug}`);
   };
 
   const projectStages = [
@@ -428,25 +398,6 @@ export function PortalDashboard() {
           </div>
         </div>
 
-        {/* Checkout Modal */}
-        {checkoutService && (
-          <ServiceCheckout
-            serviceId={checkoutService.id}
-            serviceName={checkoutService.name}
-            servicePrice={checkoutService.price}
-            notes={checkoutService.notes}
-            onClose={() => setCheckoutService(null)}
-            onConfirm={handleConfirmPurchase}
-          />
-        )}
-
-        {/* Confirmation Modal */}
-        {showConfirmation && (
-          <ServiceConfirmation
-            serviceName={showConfirmation.serviceName}
-            onClose={handleCloseConfirmation}
-          />
-        )}
       </div>
     </div>
   );

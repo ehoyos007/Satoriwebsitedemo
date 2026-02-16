@@ -301,6 +301,42 @@
 
 ---
 
+### 2026-02-16 (Session 7) | Pending Client Linking + Portal Upsell Wiring
+
+**Focus:** Link pending clients on signup, wire portal "Add Services" to Stripe
+
+**Completed:**
+- Created migration `20260216000004_link_pending_client_on_signup.sql`:
+  - Updated `handle_new_user()` trigger to also `UPDATE clients SET user_id = NEW.id WHERE business_email = NEW.email AND user_id IS NULL`
+  - Works for all auth methods (password, magic link, OAuth) since it runs in the Postgres trigger
+  - Pushed to remote Supabase — applied successfully
+- Wired portal "Add Services" flow to real Stripe checkout:
+  - Replaced `handlePurchaseService` in `PortalDashboard.tsx` — now navigates to `/checkout?service=<slug>` instead of opening fake checkout modal
+  - Created portal-to-Supabase slug mapping (e.g., `gbp` → `gbp-optimization`, `reviews` → `review-screener`)
+  - Removed `ServiceCheckout` modal and `ServiceConfirmation` modal (no longer needed — Stripe hosted checkout replaces them)
+  - Cleaned up unused state (`checkoutService`, `showConfirmation`) and imports
+- Build passes with zero errors
+
+**All three payment scenarios now covered:**
+1. New visitor pays → creates account later → `handle_new_user` trigger links pending client
+2. Logged-in user pays → webhook finds existing profile by email → links/creates client
+3. Existing user pays while logged out → webhook finds profile by email → links to existing client
+
+**Files created (1):**
+- `supabase/migrations/20260216000004_link_pending_client_on_signup.sql`
+
+**Files modified (2):**
+- `src/app/pages/portal/PortalDashboard.tsx` (replaced mock checkout with Stripe redirect)
+- `TASKS.md` (updated task status)
+
+**Next session should:**
+1. Start Resend email integration (order confirmation, welcome email)
+2. Redirect to onboarding wizard after account creation (post-checkout flow)
+3. Deploy and test portal upsell flow end-to-end
+4. Test the pending-client-linking flow with a real test card purchase + signup
+
+---
+
 ## Completed Work Summary
 
 | Phase | Description | Status |
@@ -315,3 +351,5 @@
 | -- | Auth Integration (Supabase Auth) | COMPLETE |
 | -- | Google OAuth | COMPLETE |
 | -- | Stripe Integration | COMPLETE (products, checkout, webhooks, E2E verified) |
+| -- | Pending Client Linking | COMPLETE (trigger auto-links on signup) |
+| -- | Portal Upsell → Stripe | WIRED (reuses checkout page + Stripe hosted checkout) |
