@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Stripe from 'stripe'
-import { sendEmail } from './_lib/email'
-import { orderConfirmationEmail, adminPurchaseEmail, paymentFailureEmail } from './_lib/email-templates'
+import { sendEmail } from './_lib/email.js'
+import { orderConfirmationEmail, adminPurchaseEmail, paymentFailureEmail } from './_lib/email-templates.js'
 
 export const config = {
   api: { bodyParser: false },
