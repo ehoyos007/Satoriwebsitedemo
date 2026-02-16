@@ -48,6 +48,7 @@ export function BillingPage() {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [subscriptions, setSubscriptions] = useState<SubscriptionRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
   useEffect(() => {
@@ -57,22 +58,31 @@ export function BillingPage() {
     }
 
     async function fetchBilling() {
-      const [ordersRes, subsRes] = await Promise.all([
-        supabase
-          .from('orders')
-          .select('id, amount_cents, status, created_at, services(name, slug)')
-          .eq('client_id', client!.id)
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('subscriptions')
-          .select('id, status, current_period_start, current_period_end, created_at, services(name, slug)')
-          .eq('client_id', client!.id)
-          .order('created_at', { ascending: false }),
-      ]);
+      try {
+        const [ordersRes, subsRes] = await Promise.all([
+          supabase
+            .from('orders')
+            .select('id, amount_cents, status, created_at, services(name, slug)')
+            .eq('client_id', client!.id)
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('subscriptions')
+            .select('id, status, current_period_start, current_period_end, created_at, services(name, slug)')
+            .eq('client_id', client!.id)
+            .order('created_at', { ascending: false }),
+        ]);
 
-      if (ordersRes.data) setOrders(ordersRes.data as any);
-      if (subsRes.data) setSubscriptions(subsRes.data as any);
-      setLoading(false);
+        if (ordersRes.error) throw ordersRes.error;
+        if (subsRes.error) throw subsRes.error;
+
+        setOrders(ordersRes.data as any);
+        setSubscriptions(subsRes.data as any);
+      } catch (err) {
+        console.error('Failed to fetch billing data:', err);
+        setError('Failed to load billing data. Please try refreshing the page.');
+      } finally {
+        setLoading(false);
+      }
     }
 
     fetchBilling();
@@ -95,6 +105,7 @@ export function BillingPage() {
       }
     } catch (err) {
       console.error('Failed to create portal session:', err);
+      setError('Failed to open billing portal. Please try again.');
     }
 
     setPortalLoading(false);
@@ -121,6 +132,12 @@ export function BillingPage() {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/5 border border-red-400/20 text-red-400 text-sm">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          {error}
+        </div>
+      )}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-4xl mb-2">

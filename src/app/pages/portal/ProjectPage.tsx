@@ -37,6 +37,7 @@ export function ProjectPage() {
   const { client, loading: clientLoading } = useClientData();
   const [projects, setProjects] = useState<ProjectWithMilestones[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!client) {
@@ -45,23 +46,30 @@ export function ProjectPage() {
     }
 
     async function fetchProjects() {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*, project_milestones(*)')
-        .eq('client_id', client!.id)
-        .order('created_at', { ascending: false });
+      try {
+        const { data, error: fetchErr } = await supabase
+          .from('projects')
+          .select('*, project_milestones(*)')
+          .eq('client_id', client!.id)
+          .order('created_at', { ascending: false });
 
-      if (!error && data) {
-        // Sort milestones by display_order within each project
-        const sorted = data.map((p: any) => ({
-          ...p,
-          project_milestones: (p.project_milestones || []).sort(
-            (a: Milestone, b: Milestone) => a.display_order - b.display_order
-          ),
-        }));
-        setProjects(sorted);
+        if (fetchErr) throw fetchErr;
+
+        if (data) {
+          const sorted = data.map((p: any) => ({
+            ...p,
+            project_milestones: (p.project_milestones || []).sort(
+              (a: Milestone, b: Milestone) => a.display_order - b.display_order
+            ),
+          }));
+          setProjects(sorted);
+        }
+      } catch (err) {
+        console.error('Failed to fetch projects:', err);
+        setError('Failed to load project data. Please try refreshing the page.');
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     }
 
     fetchProjects();
@@ -79,6 +87,24 @@ export function ProjectPage() {
         </div>
         <div className="glass-panel p-12 rounded-2xl border border-white/10 text-center">
           <div className="animate-pulse text-zinc-500">Loading projects...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-4xl mb-2">
+            <span className="bg-gradient-to-r from-cyan-400 to-violet-400 text-transparent bg-clip-text">
+              Project Details
+            </span>
+          </h1>
+        </div>
+        <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/5 border border-red-400/20 text-red-400 text-sm">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          {error}
         </div>
       </div>
     );

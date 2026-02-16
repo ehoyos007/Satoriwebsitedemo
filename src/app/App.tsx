@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { HomePage } from './pages/HomePage';
 import { ServicesPage } from './pages/ServicesPage';
@@ -43,12 +44,14 @@ import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
 import { AuthCallbackPage } from './pages/auth/AuthCallbackPage';
 import { CaseStudyWizard } from './pages/admin/CaseStudyWizard';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
 import { AnimatedGalaxyBackground } from './components/AnimatedGalaxyBackground';
 
 export default function App() {
   return (
+    <ErrorBoundary>
     <Router>
       <AuthProvider>
         <div className="min-h-screen bg-[#0a0a0f] text-white relative">
@@ -124,11 +127,15 @@ export default function App() {
               {/* Admin Tools (protected, admin only) */}
               <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
               <Route path="/admin/case-study-wizard" element={<ProtectedRoute requiredRole="admin"><CaseStudyWizard /></ProtectedRoute>} />
+
+              {/* 404 Catch-all */}
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
             <Footer />
           </div>
         </div>
       </AuthProvider>
     </Router>
+    </ErrorBoundary>
   );
 }
