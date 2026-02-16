@@ -192,17 +192,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           })
           console.log(`Project created for client ${clientId}, service ${serviceSlug}`)
 
-          // 6. Send order confirmation + admin notification (fire-and-forget)
+          // 6. Send order confirmation + admin notification (awaited — Vercel kills process after response)
+          const emailPromises: Promise<void>[] = []
+
           if (customerEmail) {
             const confirmation = orderConfirmationEmail({
               serviceName: service.name,
               amountCents: amountCents,
               sessionId: session.id,
             })
-            sendEmail({ to: customerEmail, ...confirmation })
-              .then(r => r.success
-                ? console.log(`Order confirmation sent to ${customerEmail}`)
-                : console.error(`Order confirmation failed: ${r.error}`))
+            emailPromises.push(
+              sendEmail({ to: customerEmail, ...confirmation })
+                .then(r => { r.success
+                  ? console.log(`Order confirmation sent to ${customerEmail}`)
+                  : console.error(`Order confirmation failed: ${r.error}`) })
+            )
           }
 
           const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL
@@ -214,11 +218,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               clientId: clientId!,
               sessionId: session.id,
             })
-            sendEmail({ to: adminEmail, ...adminNotif })
-              .then(r => r.success
-                ? console.log(`Admin purchase notification sent`)
-                : console.error(`Admin notification failed: ${r.error}`))
+            emailPromises.push(
+              sendEmail({ to: adminEmail, ...adminNotif })
+                .then(r => { r.success
+                  ? console.log(`Admin purchase notification sent`)
+                  : console.error(`Admin notification failed: ${r.error}`) })
+            )
           }
+
+          await Promise.allSettled(emailPromises)
         } else {
           console.error(`Could not create client or order for ${customerEmail}`)
         }
@@ -334,10 +342,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                   serviceName,
                   customerEmail: clientEmail,
                 })
-                sendEmail({ to: clientEmail, ...failureEmail })
-                  .then(r => r.success
-                    ? console.log(`Payment failure email sent to ${clientEmail}`)
-                    : console.error(`Payment failure email failed: ${r.error}`))
+                const r = await sendEmail({ to: clientEmail, ...failureEmail })
+                r.success
+                  ? console.log(`Payment failure email sent to ${clientEmail}`)
+                  : console.error(`Payment failure email failed: ${r.error}`)
               }
             }
           }
