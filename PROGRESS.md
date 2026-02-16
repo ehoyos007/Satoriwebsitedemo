@@ -7,6 +7,56 @@
 
 ## Session Log
 
+### 2026-02-16 (Session 12) | Meta Tags, Open Graph, Favicon & App Manifest
+
+**Focus:** Production polish — SEO meta tags, Open Graph/Twitter cards, favicon, apple-touch-icon, web app manifest
+
+**Completed:**
+- Installed `react-helmet-async` for per-route meta tag management
+- Created `public/` directory with all static assets:
+  - `favicon.ico` (multi-size: 16/32/48px) — extracted circular icon from satori-logo.png
+  - `favicon-16x16.png`, `favicon-32x32.png` — PNG favicons
+  - `apple-touch-icon.png` (180x180) — dark background with white icon
+  - `android-chrome-192x192.png`, `android-chrome-512x512.png` — PWA icons
+  - `og-image.png` (1200x630) — full Satori Studios logo on dark background for social sharing
+  - `manifest.json` — web app manifest with name, icons, theme_color #0a0a0f
+- Updated `index.html` with:
+  - Descriptive `<title>` and `<meta name="description">`
+  - `<meta name="theme-color">`
+  - Favicon links (ico, 32px, 16px, apple-touch-icon)
+  - Manifest link
+  - Default Open Graph and Twitter Card meta tags
+- Created `src/app/components/SEO.tsx` — reusable component wrapping react-helmet-async:
+  - Props: title, description, path, ogImage, noIndex
+  - Auto-generates canonical URL, og:url, twitter:card tags
+  - noIndex flag for private pages (login, checkout, portal)
+- Wrapped app with `<HelmetProvider>` in `main.tsx`
+- Added `<SEO>` to 15 pages/templates:
+  - Marketing: HomePage, ServicesPage, PricingPage, CaseStudiesPage, BookCallPage
+  - Service detail: ServicePageTemplate (covers 7 pages), WebsiteBuildPage, ReviewScreenerPage, GoogleBusinessProfilePage
+  - Auth/checkout: LoginPage (noIndex), CheckoutPage (noIndex)
+  - Portal: PortalLayout (noIndex, covers all 12 portal routes)
+  - Error: NotFoundPage (noIndex)
+
+**Files created (9):**
+- `public/favicon.ico`, `public/favicon-16x16.png`, `public/favicon-32x32.png`
+- `public/apple-touch-icon.png`, `public/android-chrome-192x192.png`, `public/android-chrome-512x512.png`
+- `public/og-image.png`, `public/manifest.json`
+- `src/app/components/SEO.tsx`
+
+**Files modified (15):**
+- `index.html`, `src/main.tsx`, `package.json`
+- `HomePage.tsx`, `ServicesPage.tsx`, `PricingPage.tsx`, `CaseStudiesPage.tsx`
+- `LoginPage.tsx`, `CheckoutPage.tsx`, `BookCallPage.tsx`, `NotFoundPage.tsx`
+- `PortalLayout.tsx`, `ServicePageTemplate.tsx`
+- `WebsiteBuildPage.tsx`, `ReviewScreenerPage.tsx`, `GoogleBusinessProfilePage.tsx`
+
+**Build:** Passes with zero errors
+
+**Left off:** Meta tags, OG tags, favicons, and manifest complete. Remaining production polish: responsive design verification. Next priorities: mobile portal sidebar, email templates, testing.
+
+---
+
 ### 2026-02-16 (Session 11) | Payment Failure Messaging, Retry Logic, Form Validation
 
 **Focus:** Complete remaining P0 error handling — payment failure UX, retry for transient failures, inline form validation

@@ -16,6 +16,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import { useState } from 'react';
+import { SEO } from '@/app/components/SEO';
 
 export function ReviewScreenerPage() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
@@ -156,6 +157,11 @@ export function ReviewScreenerPage() {
 
   return (
     <div className="pt-16">
+      <SEO
+        title="Review Screener"
+        path="/services/review-screener"
+        description="Automated review management that captures 5-star reviews and filters negative feedback before it goes public. Setup $997, then $297/mo."
+      />
       {/* Breadcrumb */}
       <section className="py-4 px-4 sm:px-6 lg:px-8 border-b border-white/5">
         <div className="max-w-7xl mx-auto">

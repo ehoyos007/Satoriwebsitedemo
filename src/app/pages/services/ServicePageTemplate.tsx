@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import { ServiceConfig } from '@/app/data/serviceConfigs/types';
+import { SEO } from '@/app/components/SEO';
 
 interface ServicePageTemplateProps {
   config: ServiceConfig;
@@ -15,6 +16,11 @@ export function ServicePageTemplate({ config }: ServicePageTemplateProps) {
 
   return (
     <div className="pt-16">
+      <SEO
+        title={hero.serviceName}
+        path={`/services/${config.slug}`}
+        description={hero.description}
+      />
       {/* Breadcrumb */}
       <section className="py-4 px-4 sm:px-6 lg:px-8 border-b border-white/5">
         <div className="max-w-7xl mx-auto">

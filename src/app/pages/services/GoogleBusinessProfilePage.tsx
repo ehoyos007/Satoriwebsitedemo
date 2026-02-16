@@ -16,6 +16,7 @@ import {
   Navigation,
 } from 'lucide-react';
 import { useState } from 'react';
+import { SEO } from '@/app/components/SEO';
 
 export function GoogleBusinessProfilePage() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
@@ -162,6 +163,11 @@ export function GoogleBusinessProfilePage() {
 
   return (
     <div className="pt-16">
+      <SEO
+        title="Google Business Profile Optimization"
+        path="/services/google-business-profile"
+        description="Dominate local search with a fully optimized Google Business Profile. More map pack visibility, more calls, more customers. Setup $1,495, then $197/mo."
+      />
       {/* Breadcrumb */}
       <section className="py-4 px-4 sm:px-6 lg:px-8 border-b border-white/5">
         <div className="max-w-7xl mx-auto">

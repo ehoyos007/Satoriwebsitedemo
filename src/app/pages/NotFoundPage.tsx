@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Home, ArrowLeft } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export function NotFoundPage() {
   return (
     <div className="min-h-[70vh] flex items-center justify-center p-6">
+      <SEO title="Page Not Found" noIndex />
       <div className="max-w-md w-full text-center">
         <div className="text-8xl font-bold bg-gradient-to-r from-cyan-400 to-violet-400 text-transparent bg-clip-text mb-4">
           404

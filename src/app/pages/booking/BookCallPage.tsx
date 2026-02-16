@@ -13,6 +13,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { useState } from 'react';
+import { SEO } from '../../components/SEO';
 
 export function BookCallPage() {
   const navigate = useNavigate();
@@ -35,6 +36,11 @@ export function BookCallPage() {
 
   return (
     <div className="min-h-screen pt-16">
+      <SEO
+        title="Book a Call"
+        path="/book-call"
+        description="Schedule a free strategy call with Satori Studios. We'll discuss your business goals and how to grow your leads and revenue."
+      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-8">

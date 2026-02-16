@@ -12,6 +12,7 @@ import {
   Rocket,
 } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
+import { SEO } from '@/app/components/SEO';
 
 const navItems = [
   { path: '/portal', label: 'Overview', icon: Rocket, exact: true },
@@ -39,6 +40,7 @@ export function PortalLayout() {
 
   return (
     <div className="min-h-screen pt-16">
+      <SEO title="Client Portal" path="/portal" description="Manage your project, view analytics, and track progress in your Satori Studios client portal." noIndex />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Sidebar Navigation */}

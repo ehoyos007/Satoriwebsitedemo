@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ChartBar, TrendingUp, Star, MapPin, Phone, Bot, Globe, Zap, Search, Megaphone } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { SEO } from '../components/SEO';
 import logoMark from '@/assets/1d25c7bfec767bdda7142f41d5290ab7d412db37.png';
 
 const chartData = [
@@ -15,6 +16,10 @@ const chartData = [
 export function HomePage() {
   return (
     <div className="pt-16">
+      <SEO
+        path="/"
+        description="Custom websites, SEO, and marketing systems that turn traffic into calls for plumbers, HVAC techs, electricians, and contractors. Starting at $999."
+      />
       {/* Hero Section with Aurora Background */}
       <section className="relative py-32 px-4 sm:px-6 lg:px-8 overflow-hidden">
         <div className="max-w-7xl mx-auto relative z-10">

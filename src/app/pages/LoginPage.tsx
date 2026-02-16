@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { LogIn, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
+import { SEO } from '@/app/components/SEO';
 
 // Friendly error messages for common Supabase auth errors
 const friendlyAuthError = (msg: string): string => {
@@ -72,6 +73,7 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen">
+      <SEO title="Login" path="/login" description="Sign in to your Satori Studios client portal to track your project, view analytics, and manage your services." noIndex />
       <div className="pt-32 pb-16 px-4">
         <div className="max-w-md mx-auto">
           {/* Header */}

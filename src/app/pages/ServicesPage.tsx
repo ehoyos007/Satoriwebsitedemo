@@ -25,6 +25,7 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { useState } from 'react';
+import { SEO } from '../components/SEO';
 
 export function ServicesPage() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
@@ -186,6 +187,11 @@ export function ServicesPage() {
 
   return (
     <div className="pt-16">
+      <SEO
+        title="Services"
+        path="/services"
+        description="Website builds, Google Business Profile optimization, review management, AI chatbots, local SEO, Google Ads, and more for local service businesses."
+      />
       {/* Hero Section */}
       <section className="relative py-24 sm:py-32 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto text-center relative z-10">

@@ -6,6 +6,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { retryQuery, retryFetch } from '../../lib/retry';
+import { SEO } from '../../components/SEO';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -131,6 +132,7 @@ export function CheckoutPage() {
 
   return (
     <div className="min-h-screen pt-16">
+      <SEO title="Checkout" path="/checkout" description="Complete your purchase and start growing your business with Satori Studios." noIndex />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Canceled Banner */}
         {wasCanceled && (

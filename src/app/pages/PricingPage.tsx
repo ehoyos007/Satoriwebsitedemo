@@ -7,6 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '../components/ui/accordion';
+import { SEO } from '../components/SEO';
 
 export function PricingPage() {
   const faqs = [
@@ -194,6 +195,11 @@ export function PricingPage() {
 
   return (
     <div className="pt-16">
+      <SEO
+        title="Pricing"
+        path="/pricing"
+        description="Transparent pricing for websites, SEO, review management, and marketing systems. Website builds from $999. No hidden fees."
+      />
       {/* Hero Section */}
       <section className="relative py-32 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center relative z-10">

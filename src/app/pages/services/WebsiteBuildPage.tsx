@@ -14,6 +14,7 @@ import {
   BarChart3,
 } from 'lucide-react';
 import { useState } from 'react';
+import { SEO } from '@/app/components/SEO';
 
 export function WebsiteBuildPage() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
@@ -145,6 +146,11 @@ export function WebsiteBuildPage() {
 
   return (
     <div className="pt-16">
+      <SEO
+        title="Website Build"
+        path="/services/website-build"
+        description="Conversion-focused websites for local service businesses. Mobile-first, SEO-ready, with lead capture and tracking. Starting at $999.95."
+      />
       {/* Breadcrumb */}
       <section className="py-4 px-4 sm:px-6 lg:px-8 border-b border-white/5">
         <div className="max-w-7xl mx-auto">

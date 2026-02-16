@@ -4,6 +4,7 @@ import { Search, ListFilter, X } from 'lucide-react';
 import { caseStudies, getAllIndustries, getAllServices, type CaseStudy } from '../data/caseStudies';
 import { CaseStudyCard } from '../components/CaseStudyCard';
 import { CaseStudyModal } from '../components/CaseStudyModal';
+import { SEO } from '../components/SEO';
 
 export function CaseStudiesPage() {
   const [selectedCaseStudy, setSelectedCaseStudy] = useState<CaseStudy | null>(null);
@@ -50,6 +51,11 @@ export function CaseStudiesPage() {
 
   return (
     <div className="pt-16">
+      <SEO
+        title="Case Studies"
+        path="/case-studies"
+        description="See how local service businesses grew their leads, calls, and revenue with Satori Studios websites and marketing systems."
+      />
       {/* Hero Section */}
       <section className="relative py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center relative z-10">
