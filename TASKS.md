@@ -1,7 +1,7 @@
 # TASKS.md - Satori Studios Website
 
 > Active task tracking. Organized by phase and priority.
-> Last updated: 2026-02-16 (end of session 3)
+> Last updated: 2026-02-16 (end of session 9)
 
 ---
 
@@ -55,11 +55,14 @@
 - [ ] Set up preview deployments on PRs
 - [ ] Create staging environment with separate Supabase/Stripe configs
 
-### 1.4 Email System (P1)
-- [ ] Set up Resend account and verify domain
+### 1.4 Email System (P1) -- PARTIAL
+- [x] Set up Resend account and verify domain (DNS records in Vercel)
+- [x] Set Vercel env vars: RESEND_API_KEY, RESEND_FROM_EMAIL, ADMIN_NOTIFICATION_EMAIL
+- [x] Create onboarding welcome email (styled HTML via Resend REST API)
+- [x] Create admin notification email on new client onboarding
 - [ ] Create email templates: signup confirmation, password reset, email verification
 - [ ] Create email templates: order confirmation, payment receipt, subscription update
-- [ ] Create email templates: welcome email, onboarding reminders, getting-started guide
+- [ ] Create email templates: onboarding reminders, getting-started guide
 - [ ] Create email templates: project updates, milestone notifications
 - [ ] Create email template: monthly report
 - [ ] Wire up Supabase Auth to send emails via Resend (custom SMTP)
@@ -102,7 +105,7 @@
 - [x] Handle payment success callback (CheckoutSuccessPage at `/checkout/success`)
 - [x] Auto-create pending client + order on payment (webhook handles both new and existing users)
 - [x] Link pending client to profile on account signup (migration 20260216000004 — handle_new_user trigger)
-- [ ] Redirect to onboarding wizard after account creation
+- [x] Redirect to onboarding wizard after account creation (CheckoutSuccessPage smart routing)
 - [x] Store order record in Supabase (webhook creates order with service, amount, status, session ID)
 - [x] Activity log entry on purchase
 - [ ] Send order confirmation email via Resend
@@ -111,7 +114,7 @@
 - [x] Wire "Add Services" flow in portal to Stripe (navigates to /checkout?service=<slug>)
 - [x] Create Stripe Checkout Session for add-on services (reuses existing create-checkout-session API)
 - [x] Handle subscription creation for monthly services (webhook already handles subscription events)
-- [ ] Update client's active services in Supabase on payment success
+- [x] Update client's active services in Supabase on payment success (webhook creates project, portal fetches real orders/subs)
 - [ ] Send purchase confirmation email
 
 ### 3.3 Error Handling (P0)
@@ -120,6 +123,26 @@
 - [ ] Add retry logic for transient API failures
 - [ ] Add loading states for all async operations
 - [ ] Validate all form inputs with clear error messages
+
+---
+
+## Phase 3B: Onboarding Wizard Integration (P0) -- COMPLETE
+
+### 3B.1 Onboarding Backend Wiring
+- [x] Add form state & input bindings to OnboardingWizard (all 6 steps)
+- [x] Add step-level validation (required fields per step, inline errors)
+- [x] Create Supabase Storage bucket `onboarding-assets` with RLS policies (migration)
+- [x] Wire file upload zones (logo + brand assets) with real Supabase Storage uploads
+- [x] Wire availability calendar to Supabase `availability_slots` table
+- [x] Client record lookup with 3-retry for trigger race condition + fallback creation
+- [x] Auto-save form data on step change (debounced to `clients.onboarding_data`)
+- [x] Partial data restoration on page refresh (`_partial` flag + `_lastStep`)
+- [x] Completion handler: upload files → build JSONB → update client → log activity → send emails → navigate
+- [x] Create `api/onboarding-complete.ts` serverless function (welcome email + admin notification via Resend)
+- [x] Dynamic OnboardingSuccess page (business name, kickoff call details, skipped scheduling)
+- [x] Smart routing on CheckoutSuccessPage (onboarding vs portal based on `onboarding_completed`)
+- [x] Fix auth loading state stuck at `true` (added `.catch()` + non-blocking `fetchProfile`)
+- [x] Verified E2E: wizard → complete → data in Supabase → success page → CheckoutSuccess routing
 
 ---
 

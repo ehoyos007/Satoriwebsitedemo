@@ -58,16 +58,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         fetchProfile(initialSession.user.id);
       }
       setLoading(false);
+    }).catch(() => {
+      setLoading(false);
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
+      (_event, newSession) => {
         setSession(newSession);
         setUser(newSession?.user ?? null);
 
         if (newSession?.user) {
-          await fetchProfile(newSession.user.id);
+          // Don't await — set loading false immediately, fetch profile in background
+          fetchProfile(newSession.user.id);
         } else {
           setProfile(null);
         }

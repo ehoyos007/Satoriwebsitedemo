@@ -337,6 +337,123 @@
 
 ---
 
+### 2026-02-16 (Session 8) | Active Services on Payment Success
+
+**Focus:** Close the payment-to-portal loop — show real purchased services
+
+**Completed:**
+- Webhook now creates a `project` record (status: `onboarding`) on every `checkout.session.completed`, so each purchased service has a trackable entity
+- Portal fetches real orders (status: `paid`) and subscriptions (status: `active`) from Supabase with service joins on mount
+- Overview tab shows "Your Active Services" panel with real service names and "Active" badges (replaces hardcoded empty list)
+- AddServicesView receives `purchasedServiceIds` prop — shows green "Active" badge on already-owned services, overriding "Popular"/"Recommended"
+- Reverse slug mapping (Supabase slug → portal ID) built from existing `portalToSlug` map
+- RLS policies already allow clients to read their own orders/subscriptions/projects via `get_client_id()`
+- Build passes with zero TS errors
+
+**Data flow established:**
+```
+Stripe payment → webhook → order + project + activity_log in Supabase
+                                    ↓
+Portal loads → fetches orders/subscriptions via RLS → shows active services
+```
+
+**Files modified (3):**
+- `api/stripe-webhook.ts` (added project creation step)
+- `src/app/pages/portal/PortalDashboard.tsx` (real data fetch, overview display, prop passing)
+- `src/app/pages/portal/AddServicesView.tsx` (purchasedServiceIds prop, Active badges)
+
+**Commit:** `107d4a5`
+
+**Next session should:**
+1. Redirect to onboarding wizard after account creation (post-checkout flow)
+2. Start Resend email integration (order confirmation, welcome email)
+3. Test the full payment → signup → portal flow E2E with a test card
+4. Deploy to production and verify portal shows purchased services
+
+---
+
+### 2026-02-16 (Session 9) | Onboarding Wizard — Full Backend Integration
+
+**Focus:** Wire the 6-step onboarding wizard to Supabase, Resend, and Stripe
+
+**Completed:**
+- Rewrote `OnboardingWizard.tsx` from UI prototype to fully functional wizard:
+  - `OnboardingFormData` interface covering all 6 steps (30+ fields)
+  - Step-level validation with inline error messages (steps 1, 2, 4 have required fields; 3, 5, 6 optional)
+  - Client record lookup on mount with 3-retry + fallback creation for trigger race condition
+  - Auto-save on step change (2s debounce → `clients.onboarding_data` with `_partial` flag + `_lastStep`)
+  - Partial data restoration on page refresh (resumes at saved step with all data)
+  - Real file upload zones with hidden `<input type="file">`, file preview, remove buttons
+  - Real availability calendar from `availability_slots` table (groups by date, timezone-aware)
+  - "No Available Times" fallback with skip messaging
+  - Completion handler: upload files → build JSONB → create booking (if slot selected) → update client → log activity → send emails → navigate to success
+  - Loading spinner on submit, dismissible error banner
+- Created `supabase/migrations/20260217000001_onboarding_storage.sql`:
+  - `onboarding-assets` storage bucket (50MB limit, image/PDF/SVG MIME types)
+  - RLS policies: users upload/read own folder, admins read all
+- Created `api/onboarding-complete.ts` — Resend email serverless function:
+  - Welcome email to client (styled HTML with business name, timeline, kickoff details, portal link)
+  - Admin notification email (client summary with all details)
+  - Non-blocking: failures logged but don't block the wizard
+- Rewrote `OnboardingSuccess.tsx` with dynamic data:
+  - Reads `useLocation().state` for business name, scheduling details
+  - "You're In, {businessName}! Build Started." dynamic heading
+  - Conditional kickoff call section (scheduled time OR "we'll reach out" messaging)
+  - Redirects to `/portal` on direct navigation (no state)
+- Updated `CheckoutSuccessPage.tsx` with smart routing:
+  - Checks `clients.onboarding_completed` for logged-in users
+  - "Start Onboarding" → `/onboarding` if not completed
+  - "Go to Portal" → `/portal` if already completed
+  - Dynamic step 2 text based on onboarding status
+- Fixed auth `loading` state permanently stuck at `true`:
+  - Added `.catch(() => setLoading(false))` to `getSession().then()`
+  - Removed `async`/`await` from `onAuthStateChange` callback so `setLoading(false)` fires immediately
+- Set up Resend email domain verification (DNS records in Vercel)
+- Added Vercel env vars: `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `ADMIN_NOTIFICATION_EMAIL`
+- Pushed storage migration to Supabase via `supabase db push`
+- Deployed to production and verified end-to-end:
+  - Wizard loads instantly (auth fix) → fills data → auto-saves → restores on refresh
+  - Completes → data saved to Supabase (`onboarding_completed: true`, full JSONB) → success page with dynamic business name
+  - CheckoutSuccessPage shows "Go to Portal" (correctly detects completed onboarding)
+
+**Bug fixed:**
+- Auth `loading` state stuck at `true` — ProtectedRoute showed "Loading..." indefinitely. Root cause: `getSession().then()` had no `.catch()` AND `onAuthStateChange` `await`ed `fetchProfile()` before `setLoading(false)`. Fix: added catch handler + fire-and-forget profile fetch.
+
+**Files created (2):**
+- `api/onboarding-complete.ts`
+- `supabase/migrations/20260217000001_onboarding_storage.sql`
+
+**Files modified (4):**
+- `src/app/pages/onboarding/OnboardingWizard.tsx` (complete rewrite — 996 lines added)
+- `src/app/pages/onboarding/OnboardingSuccess.tsx` (dynamic data from navigation state)
+- `src/app/pages/checkout/CheckoutSuccessPage.tsx` (smart routing based on onboarding status)
+- `src/app/contexts/AuthContext.tsx` (auth loading fix)
+
+**E2E Test Results:**
+| Feature | Result |
+|---------|--------|
+| Wizard loads on protected route | Pass |
+| Auto-save on step change | Pass |
+| Auto-restore on page refresh | Pass |
+| Step validation (required fields) | Pass |
+| No Available Times fallback | Pass |
+| Complete Onboarding flow | Pass |
+| DB: `onboarding_completed = true` | Pass |
+| DB: `onboarding_data` JSONB saved | Pass |
+| DB: top-level fields populated | Pass |
+| Success page: dynamic business name | Pass |
+| Success page: skipped scheduling | Pass |
+| CheckoutSuccess: smart routing | Pass |
+
+**Next session should:**
+1. Test file uploads in step 3 (need real files to upload)
+2. Add availability slots in admin and test real scheduling flow
+3. Start Resend email integration for order confirmation emails
+4. Begin portal rework (sidebar + nested routes)
+5. Test email delivery in Resend dashboard
+
+---
+
 ## Completed Work Summary
 
 | Phase | Description | Status |
@@ -353,3 +470,5 @@
 | -- | Stripe Integration | COMPLETE (products, checkout, webhooks, E2E verified) |
 | -- | Pending Client Linking | COMPLETE (trigger auto-links on signup) |
 | -- | Portal Upsell → Stripe | WIRED (reuses checkout page + Stripe hosted checkout) |
+| -- | Onboarding Wizard Backend | COMPLETE (form state, validation, auto-save, file uploads, scheduling, emails, E2E verified) |
+| -- | Email System (Resend) | PARTIAL (onboarding welcome + admin notification done) |

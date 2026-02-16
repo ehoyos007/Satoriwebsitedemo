@@ -1,8 +1,31 @@
 import { motion } from 'motion/react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle, ArrowRight, Calendar, Sparkles, Rocket } from 'lucide-react';
+import { useEffect } from 'react';
+
+interface SuccessState {
+  businessName?: string;
+  scheduledTime?: string | null;
+  timezone?: string;
+  skippedScheduling?: boolean;
+}
 
 export function OnboardingSuccess() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const state = (location.state as SuccessState) || {};
+
+  // If no state (direct navigation), redirect to portal
+  useEffect(() => {
+    if (!location.state) {
+      navigate('/portal', { replace: true });
+    }
+  }, [location.state, navigate]);
+
+  if (!location.state) return null;
+
+  const { businessName, scheduledTime, timezone, skippedScheduling } = state;
+
   return (
     <div className="min-h-screen pt-16 flex items-center justify-center px-4">
       <div className="max-w-2xl w-full">
@@ -29,11 +52,11 @@ export function OnboardingSuccess() {
           >
             <h1 className="text-4xl mb-4">
               <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-violet-400 text-transparent bg-clip-text">
-                You're In!
+                {businessName ? `You're In, ${businessName}!` : "You're In!"}
               </span>{' '}
               Build Started.
             </h1>
-            
+
             <p className="text-xl text-zinc-400 mb-8">
               Your website build has officially kicked off. Here's what happens next:
             </p>
@@ -56,7 +79,7 @@ export function OnboardingSuccess() {
                   1
                 </span>
                 <span>
-                  <strong className="text-white">Kickoff Call (scheduled):</strong> We'll review your intake
+                  <strong className="text-white">Kickoff Call{!skippedScheduling ? ' (scheduled)' : ''}:</strong> We'll review your intake
                   and clarify any questions
                 </span>
               </li>
@@ -90,24 +113,40 @@ export function OnboardingSuccess() {
             </ol>
           </motion.div>
 
-          {/* Kickoff Call Reminder */}
+          {/* Kickoff Call Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="glass-panel p-6 rounded-xl border border-cyan-400/30 bg-cyan-500/5 mb-8"
+            className={`glass-panel p-6 rounded-xl border mb-8 ${
+              skippedScheduling
+                ? 'border-amber-400/30 bg-amber-500/5'
+                : 'border-cyan-400/30 bg-cyan-500/5'
+            }`}
           >
             <div className="flex items-start gap-4">
-              <Calendar className="w-6 h-6 text-cyan-400 flex-shrink-0 mt-1" />
+              <Calendar className={`w-6 h-6 flex-shrink-0 mt-1 ${skippedScheduling ? 'text-amber-400' : 'text-cyan-400'}`} />
               <div className="text-left">
-                <h4 className="mb-1">Your Kickoff Call is Scheduled</h4>
-                <p className="text-sm text-zinc-400 mb-3">
-                  Tuesday, January 7, 2025 at 2:00 PM EST (15 minutes)
-                </p>
-                <p className="text-sm text-zinc-400">
-                  A calendar invite has been sent to your email. We'll use this time to review your intake
-                  and answer any questions.
-                </p>
+                {skippedScheduling ? (
+                  <>
+                    <h4 className="mb-1">We'll Schedule Your Kickoff Call</h4>
+                    <p className="text-sm text-zinc-400">
+                      We'll reach out within 24 hours to find a time that works for you.
+                      In the meantime, feel free to explore your portal.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h4 className="mb-1">Your Kickoff Call is Scheduled</h4>
+                    <p className="text-sm text-zinc-400 mb-3">
+                      {scheduledTime || 'Confirmed'}{timezone ? ` (${timezone})` : ''} (15 minutes)
+                    </p>
+                    <p className="text-sm text-zinc-400">
+                      A calendar invite has been sent to your email. We'll use this time to review your intake
+                      and answer any questions.
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
