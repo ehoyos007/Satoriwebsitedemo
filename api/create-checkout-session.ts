@@ -35,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     params.append('line_items[0][price]', priceId)
     params.append('line_items[0][quantity]', '1')
     params.append('success_url', successUrl || `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`)
-    params.append('cancel_url', cancelUrl || `${origin}/checkout?service=${serviceSlug}`)
+    params.append('cancel_url', cancelUrl || `${origin}/checkout?service=${serviceSlug}&canceled=true`)
     params.append('metadata[service_slug]', serviceSlug)
     params.append('metadata[service_name]', serviceName || '')
     if (customerEmail) {

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useClientData } from '@/app/hooks/useClientData';
 import { supabase } from '@/app/lib/supabase';
+import { retryQuery } from '@/app/lib/retry';
 import type { Database } from '@/app/lib/database.types';
 
 type Project = Database['public']['Tables']['projects']['Row'];
@@ -47,11 +48,9 @@ export function ProjectPage() {
 
     async function fetchProjects() {
       try {
-        const { data, error: fetchErr } = await supabase
-          .from('projects')
-          .select('*, project_milestones(*)')
-          .eq('client_id', client!.id)
-          .order('created_at', { ascending: false });
+        const { data, error: fetchErr } = await retryQuery(() =>
+          supabase.from('projects').select('*, project_milestones(*)').eq('client_id', client!.id).order('created_at', { ascending: false })
+        );
 
         if (fetchErr) throw fetchErr;
 

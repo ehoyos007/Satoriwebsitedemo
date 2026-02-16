@@ -1,8 +1,9 @@
 import { motion } from 'motion/react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle, ArrowRight, User, LayoutDashboard, Loader2, Rocket } from 'lucide-react';
+import { CheckCircle, ArrowRight, User, LayoutDashboard, Loader2, Rocket, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
+import { retryQuery } from '../../lib/retry';
 import { useState, useEffect } from 'react';
 
 export function CheckoutSuccessPage() {
@@ -18,11 +19,13 @@ export function CheckoutSuccessPage() {
 
     async function checkOnboarding() {
       setCheckingOnboarding(true);
-      const { data: client } = await supabase
-        .from('clients')
-        .select('onboarding_completed')
-        .eq('user_id', user!.id)
-        .single();
+      const { data: client } = await retryQuery(() =>
+        supabase
+          .from('clients')
+          .select('onboarding_completed')
+          .eq('user_id', user!.id)
+          .single()
+      );
 
       setOnboardingCompleted(client?.onboarding_completed ?? false);
       setCheckingOnboarding(false);
@@ -30,6 +33,40 @@ export function CheckoutSuccessPage() {
 
     checkOnboarding();
   }, [user]);
+
+  // If someone navigates here directly without a session_id, show a fallback
+  if (!sessionId) {
+    return (
+      <div className="min-h-screen pt-16 flex items-center justify-center">
+        <div className="max-w-lg mx-auto px-4 text-center">
+          <div className="w-20 h-20 mx-auto mb-8 rounded-full bg-amber-500/20 flex items-center justify-center">
+            <AlertCircle className="w-10 h-10 text-amber-400" />
+          </div>
+          <h1 className="text-4xl sm:text-5xl mb-4">
+            No Payment{' '}
+            <span className="bg-gradient-to-r from-cyan-400 to-violet-400 text-transparent bg-clip-text">
+              Found
+            </span>
+          </h1>
+          <p className="text-xl text-zinc-400 mb-8">
+            It looks like you arrived here without completing a purchase.
+          </p>
+          <div className="space-y-3">
+            <Link
+              to="/pricing"
+              className="w-full inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white hover:scale-[1.02] transition-all text-lg"
+            >
+              View Our Services
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+            <Link to="/" className="block text-zinc-500 hover:text-zinc-300 transition-colors">
+              Return to homepage
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Determine CTA destination for logged-in users
   const ctaDestination = onboardingCompleted ? '/portal' : '/onboarding';

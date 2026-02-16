@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useClientData } from '@/app/hooks/useClientData';
 import { supabase } from '@/app/lib/supabase';
+import { retryQuery, retryFetch } from '@/app/lib/retry';
 
 interface OrderRow {
   id: string;
@@ -60,16 +61,12 @@ export function BillingPage() {
     async function fetchBilling() {
       try {
         const [ordersRes, subsRes] = await Promise.all([
-          supabase
-            .from('orders')
-            .select('id, amount_cents, status, created_at, services(name, slug)')
-            .eq('client_id', client!.id)
-            .order('created_at', { ascending: false }),
-          supabase
-            .from('subscriptions')
-            .select('id, status, current_period_start, current_period_end, created_at, services(name, slug)')
-            .eq('client_id', client!.id)
-            .order('created_at', { ascending: false }),
+          retryQuery(() =>
+            supabase.from('orders').select('id, amount_cents, status, created_at, services(name, slug)').eq('client_id', client!.id).order('created_at', { ascending: false })
+          ),
+          retryQuery(() =>
+            supabase.from('subscriptions').select('id, status, current_period_start, current_period_end, created_at, services(name, slug)').eq('client_id', client!.id).order('created_at', { ascending: false })
+          ),
         ]);
 
         if (ordersRes.error) throw ordersRes.error;
@@ -93,13 +90,16 @@ export function BillingPage() {
     setPortalLoading(true);
 
     try {
-      const res = await fetch('/api/create-portal-session', {
+      const res = await retryFetch('/api/create-portal-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ stripeCustomerId: client.stripe_customer_id }),
       });
 
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create billing portal session');
+      }
       if (data.url) {
         window.location.href = data.url;
       }

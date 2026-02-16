@@ -12,6 +12,7 @@ import {
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { supabase } from '@/app/lib/supabase';
+import { retryQuery } from '@/app/lib/retry';
 import { AnalyticsSnapshot } from './AnalyticsSnapshot';
 
 interface PurchasedService {
@@ -48,17 +49,15 @@ export function OverviewPage() {
   useEffect(() => {
     async function fetchPurchasedServices() {
       try {
-        const { data: orders, error: ordersErr } = await supabase
-          .from('orders')
-          .select('id, amount_cents, created_at, services(slug, name)')
-          .eq('status', 'paid');
+        const { data: orders, error: ordersErr } = await retryQuery(() =>
+          supabase.from('orders').select('id, amount_cents, created_at, services(slug, name)').eq('status', 'paid')
+        );
 
         if (ordersErr) throw ordersErr;
 
-        const { data: subs, error: subsErr } = await supabase
-          .from('subscriptions')
-          .select('id, created_at, services(slug, name)')
-          .in('status', ['active']);
+        const { data: subs, error: subsErr } = await retryQuery(() =>
+          supabase.from('subscriptions').select('id, created_at, services(slug, name)').in('status', ['active'])
+        );
 
         if (subsErr) throw subsErr;
 

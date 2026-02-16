@@ -32,12 +32,18 @@ export function SettingsPage() {
     e.preventDefault();
     if (!profile) return;
 
-    setAccountSaving(true);
     setAccountMessage(null);
+
+    if (!fullName.trim()) {
+      setAccountMessage({ type: 'error', text: 'Full name is required' });
+      return;
+    }
+
+    setAccountSaving(true);
 
     const { error } = await supabase
       .from('profiles')
-      .update({ full_name: fullName, phone: phone || null })
+      .update({ full_name: fullName.trim(), phone: phone || null })
       .eq('id', profile.id);
 
     if (error) {
@@ -52,8 +58,18 @@ export function SettingsPage() {
     e.preventDefault();
     setPasswordMessage(null);
 
+    if (!newPassword) {
+      setPasswordMessage({ type: 'error', text: 'Please enter a new password' });
+      return;
+    }
+
     if (newPassword.length < 8) {
       setPasswordMessage({ type: 'error', text: 'Password must be at least 8 characters' });
+      return;
+    }
+
+    if (!confirmPassword) {
+      setPasswordMessage({ type: 'error', text: 'Please confirm your new password' });
       return;
     }
 

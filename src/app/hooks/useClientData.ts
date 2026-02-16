@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { supabase } from '@/app/lib/supabase';
+import { retryQuery } from '@/app/lib/retry';
 import type { Database } from '@/app/lib/database.types';
 
 type Client = Database['public']['Tables']['clients']['Row'];
@@ -27,11 +28,9 @@ export function useClientData(): UseClientDataReturn {
     async function fetchClient() {
       setLoading(true);
       setError(null);
-      const { data, error: fetchError } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('user_id', user!.id)
-        .single();
+      const { data, error: fetchError } = await retryQuery(() =>
+        supabase.from('clients').select('*').eq('user_id', user!.id).single()
+      );
 
       if (fetchError && fetchError.code !== 'PGRST116') {
         // PGRST116 = no rows returned (user has no client record yet)

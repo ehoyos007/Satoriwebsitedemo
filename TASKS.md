@@ -117,12 +117,13 @@
 - [x] Update client's active services in Supabase on payment success (webhook creates project, portal fetches real orders/subs)
 - [ ] Send purchase confirmation email
 
-### 3.3 Error Handling (P0)
-- [ ] Add error boundaries around checkout flow
-- [ ] Handle payment failures with clear user messaging
-- [ ] Add retry logic for transient API failures
-- [ ] Add loading states for all async operations
-- [ ] Validate all form inputs with clear error messages
+### 3.3 Error Handling (P0) -- COMPLETE
+- [x] Add error boundaries around app (global ErrorBoundary with recovery UI)
+- [x] Add loading states for all async operations (all portal pages)
+- [x] Surface data fetch errors to users (OverviewPage, ServicesPage, BillingPage, ProjectPage)
+- [x] Handle payment failures with clear user messaging (canceled banner, success page edge cases, retryFetch on checkout)
+- [x] Add retry logic for transient API failures (retryQuery + retryFetch utility, applied to all portal pages + useClientData)
+- [x] Validate all form inputs with clear error messages (LoginPage, CreateAccountPage, SettingsPage — inline per-field errors on blur + submit)
 
 ---
 
@@ -238,11 +239,11 @@
 - [ ] Review and update marketing copy accuracy
 - [ ] Verify pricing displayed matches actual Stripe products
 
-### 7.3 Production Polish (P0)
-- [ ] Add loading states everywhere (buttons, pages, data fetches)
-- [ ] Add empty states for all data-dependent views
-- [ ] Add 404 page
-- [ ] Add error boundary at app root
+### 7.3 Production Polish (P0) -- PARTIAL
+- [x] Add loading states everywhere (buttons, pages, data fetches)
+- [x] Add empty states for all data-dependent views
+- [x] Add 404 page (styled NotFoundPage with catch-all route)
+- [x] Add error boundary at app root (ErrorBoundary with Refresh/Go Home)
 - [ ] Verify responsive design on all breakpoints
 - [ ] Add meta tags / Open Graph tags for SEO and social sharing
 - [ ] Add favicon and app manifest

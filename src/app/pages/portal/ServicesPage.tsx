@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { supabase } from '@/app/lib/supabase';
+import { retryQuery } from '@/app/lib/retry';
 import { AddServicesView } from './AddServicesView';
 
 // Map portal service IDs to Supabase service slugs
@@ -24,17 +25,15 @@ export function ServicesPage() {
   useEffect(() => {
     async function fetchPurchased() {
       try {
-        const { data: orders, error: ordersErr } = await supabase
-          .from('orders')
-          .select('services(slug)')
-          .eq('status', 'paid');
+        const { data: orders, error: ordersErr } = await retryQuery(() =>
+          supabase.from('orders').select('services(slug)').eq('status', 'paid')
+        );
 
         if (ordersErr) throw ordersErr;
 
-        const { data: subs, error: subsErr } = await supabase
-          .from('subscriptions')
-          .select('services(slug)')
-          .in('status', ['active']);
+        const { data: subs, error: subsErr } = await retryQuery(() =>
+          supabase.from('subscriptions').select('services(slug)').in('status', ['active'])
+        );
 
         if (subsErr) throw subsErr;
 

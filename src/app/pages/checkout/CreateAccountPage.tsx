@@ -5,6 +5,18 @@ import { useState } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { supabase } from '@/app/lib/supabase';
 
+interface FieldErrors {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  phone?: string;
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_RE = /^[\d\s().+-]{7,}$/;
+
 export function CreateAccountPage() {
   const navigate = useNavigate();
   const { signUp } = useAuth();
@@ -19,10 +31,37 @@ export function CreateAccountPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
+  const clearField = (field: keyof FieldErrors) =>
+    setFieldErrors((p) => ({ ...p, [field]: undefined }));
+
+  const validateAll = (): boolean => {
+    const errors: FieldErrors = {};
+
+    if (!firstName.trim()) errors.firstName = 'First name is required';
+    if (!lastName.trim()) errors.lastName = 'Last name is required';
+    if (!email.trim()) errors.email = 'Email is required';
+    else if (!EMAIL_RE.test(email)) errors.email = 'Please enter a valid email address';
+    if (!phone.trim()) errors.phone = 'Phone number is required';
+    else if (!PHONE_RE.test(phone)) errors.phone = 'Please enter a valid phone number';
+
+    if (method === 'password') {
+      if (!password) errors.password = 'Password is required';
+      else if (password.length < 6) errors.password = 'Password must be at least 6 characters';
+      if (!confirmPassword) errors.confirmPassword = 'Please confirm your password';
+      else if (password && password !== confirmPassword) errors.confirmPassword = 'Passwords do not match';
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!validateAll()) return;
 
     if (method === 'magic') {
       setIsLoading(true);
@@ -46,16 +85,6 @@ export function CreateAccountPage() {
     }
 
     // Password method
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
     setIsLoading(true);
 
     const { error: signUpError } = await signUp(email, password, {
@@ -141,21 +170,27 @@ export function CreateAccountPage() {
                     <label className="block text-sm text-zinc-400 mb-2">First Name</label>
                     <input
                       type="text"
-                      required
                       value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                      onChange={(e) => { setFirstName(e.target.value); clearField('firstName'); }}
+                      onBlur={() => { if (!firstName.trim()) setFieldErrors((p) => ({ ...p, firstName: 'First name is required' })); }}
+                      className={`w-full px-4 py-3 bg-zinc-900/50 border rounded-lg focus:outline-none focus:ring-2 ${
+                        fieldErrors.firstName ? 'border-red-400/50 focus:border-red-400/50 focus:ring-red-400/20' : 'border-white/10 focus:border-cyan-400/50 focus:ring-cyan-400/20'
+                      }`}
                     />
+                    {fieldErrors.firstName && <p className="text-xs text-red-400 mt-1">{fieldErrors.firstName}</p>}
                   </div>
                   <div>
                     <label className="block text-sm text-zinc-400 mb-2">Last Name</label>
                     <input
                       type="text"
-                      required
                       value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                      onChange={(e) => { setLastName(e.target.value); clearField('lastName'); }}
+                      onBlur={() => { if (!lastName.trim()) setFieldErrors((p) => ({ ...p, lastName: 'Last name is required' })); }}
+                      className={`w-full px-4 py-3 bg-zinc-900/50 border rounded-lg focus:outline-none focus:ring-2 ${
+                        fieldErrors.lastName ? 'border-red-400/50 focus:border-red-400/50 focus:ring-red-400/20' : 'border-white/10 focus:border-cyan-400/50 focus:ring-cyan-400/20'
+                      }`}
                     />
+                    {fieldErrors.lastName && <p className="text-xs text-red-400 mt-1">{fieldErrors.lastName}</p>}
                   </div>
                 </div>
 
@@ -165,13 +200,19 @@ export function CreateAccountPage() {
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
                     <input
                       type="email"
-                      required
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                      onChange={(e) => { setEmail(e.target.value); clearField('email'); }}
+                      onBlur={() => {
+                        if (!email.trim()) setFieldErrors((p) => ({ ...p, email: 'Email is required' }));
+                        else if (!EMAIL_RE.test(email)) setFieldErrors((p) => ({ ...p, email: 'Please enter a valid email address' }));
+                      }}
+                      className={`w-full pl-11 pr-4 py-3 bg-zinc-900/50 border rounded-lg focus:outline-none focus:ring-2 ${
+                        fieldErrors.email ? 'border-red-400/50 focus:border-red-400/50 focus:ring-red-400/20' : 'border-white/10 focus:border-cyan-400/50 focus:ring-cyan-400/20'
+                      }`}
                       placeholder="you@company.com"
                     />
                   </div>
+                  {fieldErrors.email && <p className="text-xs text-red-400 mt-1">{fieldErrors.email}</p>}
                 </div>
 
                 {method === 'password' && (
@@ -182,14 +223,33 @@ export function CreateAccountPage() {
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
                         <input
                           type="password"
-                          required
                           value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                          onChange={(e) => { setPassword(e.target.value); clearField('password'); if (confirmPassword && e.target.value !== confirmPassword) setFieldErrors((p) => ({ ...p, confirmPassword: 'Passwords do not match' })); else clearField('confirmPassword'); }}
+                          onBlur={() => {
+                            if (!password) setFieldErrors((p) => ({ ...p, password: 'Password is required' }));
+                            else if (password.length < 6) setFieldErrors((p) => ({ ...p, password: 'Password must be at least 6 characters' }));
+                          }}
+                          className={`w-full pl-11 pr-4 py-3 bg-zinc-900/50 border rounded-lg focus:outline-none focus:ring-2 ${
+                            fieldErrors.password ? 'border-red-400/50 focus:border-red-400/50 focus:ring-red-400/20' : 'border-white/10 focus:border-cyan-400/50 focus:ring-cyan-400/20'
+                          }`}
                           placeholder="Min. 6 characters"
-                          minLength={6}
                         />
                       </div>
+                      {fieldErrors.password && <p className="text-xs text-red-400 mt-1">{fieldErrors.password}</p>}
+                      {password && !fieldErrors.password && (
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <div className="flex-1 h-1 rounded-full bg-zinc-800 overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${
+                                password.length >= 12 ? 'w-full bg-emerald-400' : password.length >= 8 ? 'w-2/3 bg-cyan-400' : 'w-1/3 bg-amber-400'
+                              }`}
+                            />
+                          </div>
+                          <span className="text-xs text-zinc-500">
+                            {password.length >= 12 ? 'Strong' : password.length >= 8 ? 'Good' : 'Weak'}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -198,13 +258,15 @@ export function CreateAccountPage() {
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
                         <input
                           type="password"
-                          required
                           value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          className="w-full pl-11 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                          onChange={(e) => { setConfirmPassword(e.target.value); if (password && e.target.value && password !== e.target.value) setFieldErrors((p) => ({ ...p, confirmPassword: 'Passwords do not match' })); else clearField('confirmPassword'); }}
+                          className={`w-full pl-11 pr-4 py-3 bg-zinc-900/50 border rounded-lg focus:outline-none focus:ring-2 ${
+                            fieldErrors.confirmPassword ? 'border-red-400/50 focus:border-red-400/50 focus:ring-red-400/20' : 'border-white/10 focus:border-cyan-400/50 focus:ring-cyan-400/20'
+                          }`}
                           placeholder="Confirm password"
                         />
                       </div>
+                      {fieldErrors.confirmPassword && <p className="text-xs text-red-400 mt-1">{fieldErrors.confirmPassword}</p>}
                     </div>
                   </>
                 )}
@@ -213,12 +275,18 @@ export function CreateAccountPage() {
                   <label className="block text-sm text-zinc-400 mb-2">Phone</label>
                   <input
                     type="tel"
-                    required
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                    onChange={(e) => { setPhone(e.target.value); clearField('phone'); }}
+                    onBlur={() => {
+                      if (!phone.trim()) setFieldErrors((p) => ({ ...p, phone: 'Phone number is required' }));
+                      else if (!PHONE_RE.test(phone)) setFieldErrors((p) => ({ ...p, phone: 'Please enter a valid phone number' }));
+                    }}
+                    className={`w-full px-4 py-3 bg-zinc-900/50 border rounded-lg focus:outline-none focus:ring-2 ${
+                      fieldErrors.phone ? 'border-red-400/50 focus:border-red-400/50 focus:ring-red-400/20' : 'border-white/10 focus:border-cyan-400/50 focus:ring-cyan-400/20'
+                    }`}
                     placeholder="(555) 123-4567"
                   />
+                  {fieldErrors.phone && <p className="text-xs text-red-400 mt-1">{fieldErrors.phone}</p>}
                 </div>
 
                 <button

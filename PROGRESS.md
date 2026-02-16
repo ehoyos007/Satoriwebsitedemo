@@ -7,6 +7,67 @@
 
 ## Session Log
 
+### 2026-02-16 (Session 11) | Payment Failure Messaging, Retry Logic, Form Validation
+
+**Focus:** Complete remaining P0 error handling — payment failure UX, retry for transient failures, inline form validation
+
+**Completed:**
+- Created `src/app/lib/retry.ts` — two utilities:
+  - `retryQuery()` — wraps Supabase SDK calls, retries on network/timeout/5xx errors (max 2 retries, exponential backoff)
+  - `retryFetch()` — wraps fetch() calls, retries on network errors and 5xx responses
+- **Payment failure messaging:**
+  - Updated `api/create-checkout-session.ts` cancel_url to include `?canceled=true` param
+  - Added canceled checkout banner to `CheckoutPage.tsx` (amber warning with dismiss button)
+  - Added `CheckoutSuccessPage.tsx` fallback for direct navigation (no session_id → "No Payment Found" with CTA to pricing)
+  - Wrapped checkout API call with `retryFetch` for transient failures
+- **Retry logic applied to 7 files:**
+  - `useClientData.ts` — client record lookup
+  - `OverviewPage.tsx` — orders + subscriptions fetch
+  - `ServicesPage.tsx` — purchased service detection
+  - `BillingPage.tsx` — orders + subscriptions + Stripe portal session
+  - `ProjectPage.tsx` — projects + milestones fetch
+  - `CheckoutPage.tsx` — service data fetch + checkout session creation
+  - `CheckoutSuccessPage.tsx` — onboarding status check
+- **Form validation (3 pages):**
+  - `LoginPage.tsx` — per-field inline errors on blur/submit, email format validation, friendly Supabase error messages (maps "Invalid login credentials" → user-friendly text)
+  - `CreateAccountPage.tsx` — full inline validation: name required, email format, password strength indicator (weak/good/strong), password match in real-time, phone format validation
+  - `SettingsPage.tsx` — name-required validation on account save, confirm-required on password change
+
+**Files created (1):** `src/app/lib/retry.ts`
+**Files modified (10):** `api/create-checkout-session.ts`, `CheckoutPage.tsx`, `CheckoutSuccessPage.tsx`, `LoginPage.tsx`, `CreateAccountPage.tsx`, `SettingsPage.tsx`, `useClientData.ts`, `OverviewPage.tsx`, `ServicesPage.tsx`, `BillingPage.tsx`, `ProjectPage.tsx`
+
+**Build:** Passes with zero errors
+**Error Handling Phase:** COMPLETE (all 6 items done)
+
+**Left off:** All P0 error handling complete. Next priorities: production polish (meta tags/OG tags, favicon/manifest, responsive design verification), mobile portal sidebar, email templates.
+
+---
+
+### 2026-02-16 (Session 10) | Error Handling & Production Polish
+
+**Focus:** Global error boundary, 404 page, user-facing error states across portal
+
+**Completed:**
+- Created `ErrorBoundary.tsx` — React class component wrapping entire app, catches unhandled render errors, shows recovery UI (Refresh Page / Go Home), dev-only error detail
+- Created `NotFoundPage.tsx` — styled 404 page with gradient heading, Go Home + Go Back buttons
+- Updated `App.tsx` — wrapped with `<ErrorBoundary>`, added `<Route path="*">` catch-all for 404
+- Fixed `OverviewPage.tsx` — added `loading` + `error` state; was silently swallowing fetch failures
+- Fixed `ServicesPage.tsx` — added `loading` + `error` state; was silently swallowing fetch failures
+- Fixed `BillingPage.tsx` — added `error` state; try/catch on data fetch + Stripe portal session; user-facing error banners
+- Fixed `ProjectPage.tsx` — added `error` state; try/catch on fetch; dedicated error view
+- Deployed portal rework (from session 9) and error handling to production
+
+**Files created (2):** `ErrorBoundary.tsx`, `NotFoundPage.tsx`
+**Files modified (5):** `App.tsx`, `OverviewPage.tsx`, `ServicesPage.tsx`, `BillingPage.tsx`, `ProjectPage.tsx`
+
+**Build:** Passes with zero errors
+**Commit:** `01a9e1d`
+**Deploy:** Live at https://www.satori-labs.cloud
+
+**Left off:** Error boundaries and 404 handling complete. Remaining error handling: payment failure messaging, retry logic for transient API failures, form validation. Next priorities: responsive design verification, meta tags/OG, favicon.
+
+---
+
 ### 2026-02-16 | Portal Rework: Sidebar + Nested Routes
 
 **Focus:** Decompose monolith PortalDashboard into sidebar layout + 12 nested routes with real Supabase data

@@ -1,10 +1,11 @@
 import { motion } from 'motion/react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle, Lock, Clock, Shield, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { CheckCircle, Lock, Clock, Shield, ArrowRight, Loader2, AlertCircle, XCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { retryQuery, retryFetch } from '../../lib/retry';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -21,8 +22,9 @@ interface ServiceData {
 }
 
 export function CheckoutPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const serviceSlug = searchParams.get('service') || 'website-build';
+  const wasCanceled = searchParams.get('canceled') === 'true';
   const { user } = useAuth();
 
   const [service, setService] = useState<ServiceData | null>(null);
@@ -30,16 +32,14 @@ export function CheckoutPage() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch service from Supabase
+  // Fetch service from Supabase with retry
   useEffect(() => {
     async function fetchService() {
       setLoading(true);
       setError(null);
-      const { data, error: fetchError } = await supabase
-        .from('services')
-        .select('*')
-        .eq('slug', serviceSlug)
-        .single();
+      const { data, error: fetchError } = await retryQuery(() =>
+        supabase.from('services').select('*').eq('slug', serviceSlug).single()
+      );
 
       if (fetchError || !data) {
         setError('Service not found. Please try again.');
@@ -52,6 +52,11 @@ export function CheckoutPage() {
     }
     fetchService();
   }, [serviceSlug]);
+
+  const dismissCanceled = () => {
+    searchParams.delete('canceled');
+    setSearchParams(searchParams, { replace: true });
+  };
 
   const handleCheckout = async (priceType: 'setup' | 'monthly') => {
     if (!service) return;
@@ -69,7 +74,7 @@ export function CheckoutPage() {
     setError(null);
 
     try {
-      const res = await fetch('/api/create-checkout-session', {
+      const res = await retryFetch('/api/create-checkout-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -127,6 +132,29 @@ export function CheckoutPage() {
   return (
     <div className="min-h-screen pt-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Canceled Banner */}
+        {wasCanceled && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-400/20 text-amber-300 mb-8"
+          >
+            <XCircle className="w-5 h-5 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="font-medium">Checkout was not completed</p>
+              <p className="text-sm text-amber-400/70 mt-0.5">
+                Your payment was not processed. You can try again whenever you're ready.
+              </p>
+            </div>
+            <button
+              onClick={dismissCanceled}
+              className="text-amber-400/50 hover:text-amber-300 transition-colors text-sm"
+            >
+              Dismiss
+            </button>
+          </motion.div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl sm:text-5xl mb-4">

@@ -4,6 +4,16 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { LogIn, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
 
+// Friendly error messages for common Supabase auth errors
+const friendlyAuthError = (msg: string): string => {
+  const lower = msg.toLowerCase();
+  if (lower.includes('invalid login credentials')) return 'Incorrect email or password. Please try again.';
+  if (lower.includes('email not confirmed')) return 'Please verify your email address before signing in.';
+  if (lower.includes('too many requests')) return 'Too many login attempts. Please wait a moment and try again.';
+  if (lower.includes('network') || lower.includes('fetch')) return 'Network error. Please check your connection and try again.';
+  return msg;
+};
+
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -13,18 +23,39 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
 
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/portal';
+
+  const validateFields = (): boolean => {
+    const errors: { email?: string; password?: string } = {};
+
+    if (!email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    if (!password) {
+      errors.password = 'Password is required';
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!validateFields()) return;
+
     setIsLoading(true);
 
     const { error: signInError } = await signIn(email, password);
 
     if (signInError) {
-      setError(signInError);
+      setError(friendlyAuthError(signInError));
       setIsLoading(false);
       return;
     }
@@ -86,12 +117,22 @@ export function LoginPage() {
                   <input
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                    onChange={(e) => { setEmail(e.target.value); setFieldErrors((p) => ({ ...p, email: undefined })); }}
+                    onBlur={() => {
+                      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+                        setFieldErrors((p) => ({ ...p, email: 'Please enter a valid email address' }));
+                    }}
+                    className={`w-full pl-12 pr-4 py-3 bg-zinc-900/50 border rounded-lg focus:outline-none focus:ring-2 ${
+                      fieldErrors.email
+                        ? 'border-red-400/50 focus:border-red-400/50 focus:ring-red-400/20'
+                        : 'border-white/10 focus:border-cyan-400/50 focus:ring-cyan-400/20'
+                    }`}
                     placeholder="you@company.com"
-                    required
                   />
                 </div>
+                {fieldErrors.email && (
+                  <p className="text-xs text-red-400 mt-1.5">{fieldErrors.email}</p>
+                )}
               </div>
 
               {/* Password Field */}
@@ -102,10 +143,13 @@ export function LoginPage() {
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-12 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
+                    onChange={(e) => { setPassword(e.target.value); setFieldErrors((p) => ({ ...p, password: undefined })); }}
+                    className={`w-full pl-12 pr-12 py-3 bg-zinc-900/50 border rounded-lg focus:outline-none focus:ring-2 ${
+                      fieldErrors.password
+                        ? 'border-red-400/50 focus:border-red-400/50 focus:ring-red-400/20'
+                        : 'border-white/10 focus:border-cyan-400/50 focus:ring-cyan-400/20'
+                    }`}
                     placeholder="Enter your password"
-                    required
                   />
                   <button
                     type="button"
@@ -115,6 +159,9 @@ export function LoginPage() {
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                {fieldErrors.password && (
+                  <p className="text-xs text-red-400 mt-1.5">{fieldErrors.password}</p>
+                )}
               </div>
 
               {/* Remember Me & Forgot Password */}
