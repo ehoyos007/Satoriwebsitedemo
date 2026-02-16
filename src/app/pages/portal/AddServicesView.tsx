@@ -15,6 +15,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface Service {
   id: string;
@@ -29,11 +30,11 @@ interface Service {
 }
 
 interface AddServicesViewProps {
-  onSelectService: (serviceId: string) => void;
   purchasedServiceIds?: string[];
 }
 
-export function AddServicesView({ onSelectService, purchasedServiceIds = [] }: AddServicesViewProps) {
+export function AddServicesView({ purchasedServiceIds = [] }: AddServicesViewProps) {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterGoal, setFilterGoal] = useState<'all' | 'calls' | 'reviews' | 'visibility' | 'automation'>('all');
 
@@ -256,7 +257,7 @@ export function AddServicesView({ onSelectService, purchasedServiceIds = [] }: A
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                onClick={() => onSelectService(service.id)}
+                onClick={() => navigate(`/portal/services/${service.id}`)}
                 className="group glass-panel p-6 rounded-xl border border-white/10 hover:border-cyan-400/30 cursor-pointer transition-all relative"
               >
                 {/* Badge */}
@@ -318,7 +319,7 @@ export function AddServicesView({ onSelectService, purchasedServiceIds = [] }: A
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                onClick={() => onSelectService(service.id)}
+                onClick={() => navigate(`/portal/services/${service.id}`)}
                 className="group glass-panel p-6 rounded-xl border border-white/10 hover:border-violet-400/30 cursor-pointer transition-all relative"
               >
                 {/* Badge */}

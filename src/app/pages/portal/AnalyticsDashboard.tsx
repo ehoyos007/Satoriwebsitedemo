@@ -21,20 +21,18 @@ import {
   Minus,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ConnectionStatus } from './analytics/ConnectionStatus';
 import { TopPagesTable } from './analytics/TopPagesTable';
 import { SEOPerformance } from './analytics/SEOPerformance';
-import { PageDetailView } from './analytics/PageDetailView';
-import { KeywordDetailView } from './analytics/KeywordDetailView';
 
 export function AnalyticsDashboard() {
+  const navigate = useNavigate();
   const [dateRange, setDateRange] = useState('last-30-days');
   const [compareEnabled, setCompareEnabled] = useState(false);
   const [trafficSegment, setTrafficSegment] = useState('all');
   const [deviceFilter, setDeviceFilter] = useState('all');
-  const [selectedView, setSelectedView] = useState<'overview' | 'seo' | 'page-detail' | 'keyword-detail'>('overview');
-  const [selectedPageUrl, setSelectedPageUrl] = useState<string | null>(null);
-  const [selectedKeyword, setSelectedKeyword] = useState<string | null>(null);
+  const [selectedView, setSelectedView] = useState<'overview' | 'seo'>('overview');
 
   // Placeholder data
   const metrics = {
@@ -48,28 +46,12 @@ export function AnalyticsDashboard() {
   };
 
   const handlePageClick = (pageUrl: string) => {
-    setSelectedPageUrl(pageUrl);
-    setSelectedView('page-detail');
+    navigate(`/portal/analytics/page/${encodeURIComponent(pageUrl)}`);
   };
 
   const handleKeywordClick = (keyword: string) => {
-    setSelectedKeyword(keyword);
-    setSelectedView('keyword-detail');
+    navigate(`/portal/analytics/keyword/${encodeURIComponent(keyword)}`);
   };
-
-  const handleBackToOverview = () => {
-    setSelectedView('overview');
-    setSelectedPageUrl(null);
-    setSelectedKeyword(null);
-  };
-
-  if (selectedView === 'page-detail' && selectedPageUrl) {
-    return <PageDetailView pageUrl={selectedPageUrl} onBack={handleBackToOverview} />;
-  }
-
-  if (selectedView === 'keyword-detail' && selectedKeyword) {
-    return <KeywordDetailView keyword={selectedKeyword} onBack={handleBackToOverview} />;
-  }
 
   return (
     <div className="space-y-6">

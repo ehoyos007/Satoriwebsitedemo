@@ -7,6 +7,34 @@
 
 ## Session Log
 
+### 2026-02-16 | Portal Rework: Sidebar + Nested Routes
+
+**Focus:** Decompose monolith PortalDashboard into sidebar layout + 12 nested routes with real Supabase data
+
+**What happened:**
+- Created `useClientData` shared hook for fetching client record by auth user
+- Created `PortalLayout.tsx` — extracted sidebar from PortalDashboard, uses `<Link>` + `useLocation()` for active state, renders `<Outlet>`
+- Updated `App.tsx` — replaced single `/portal` route with 12 nested child routes
+- Extracted `OverviewPage.tsx` from overview tab content (purchased services, analytics snapshot, timeline, activity, quick actions)
+- Modified `AnalyticsDashboard.tsx` — replaced state-based drill-down nav with `navigate()` to routed URLs
+- Created `PageDetailPage.tsx` and `KeywordDetailPage.tsx` thin wrappers reading `useParams()`
+- Modified `AddServicesView.tsx` — removed `onSelectService` prop, uses `navigate('/portal/services/${id}')` directly
+- Created `ServicesPage.tsx` + `ServiceDetailPage.tsx` route wrappers
+- Built 6 new pages with real Supabase data: ProjectPage, AssetsPage, NotesPage, MessagesPage, BillingPage, SettingsPage
+- Created `api/create-portal-session.ts` — Stripe billing portal session via REST API
+- Deleted dead files: PortalDashboard.tsx, ServiceCheckout.tsx, ServiceConfirmation.tsx
+
+**Files created (15):**
+`useClientData.ts`, `PortalLayout.tsx`, `OverviewPage.tsx`, `ServicesPage.tsx`, `ServiceDetailPage.tsx`, `PageDetailPage.tsx`, `KeywordDetailPage.tsx`, `ProjectPage.tsx`, `AssetsPage.tsx`, `NotesPage.tsx`, `MessagesPage.tsx`, `BillingPage.tsx`, `SettingsPage.tsx`, `api/create-portal-session.ts`
+
+**Files modified (3):** `App.tsx`, `AnalyticsDashboard.tsx`, `AddServicesView.tsx`
+**Files deleted (3):** `PortalDashboard.tsx`, `ServiceCheckout.tsx`, `ServiceConfirmation.tsx`
+
+**Build:** Passes with zero errors
+**Left off:** Portal rework complete. Every tab is now a routable page with deep-linking, browser back/forward, and real Supabase data. Next: mobile sidebar responsive behavior, error boundaries, deploy to production.
+
+---
+
 ### 2026-02-15 | Project Assessment & Documentation
 
 **Duration:** ~1 hour

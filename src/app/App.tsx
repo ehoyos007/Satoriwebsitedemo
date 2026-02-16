@@ -21,7 +21,19 @@ import { CheckoutSuccessPage } from './pages/checkout/CheckoutSuccessPage';
 import { CreateAccountPage } from './pages/checkout/CreateAccountPage';
 import { OnboardingWizard } from './pages/onboarding/OnboardingWizard';
 import { OnboardingSuccess } from './pages/onboarding/OnboardingSuccess';
-import { PortalDashboard } from './pages/portal/PortalDashboard';
+import { PortalLayout } from './pages/portal/PortalLayout';
+import { OverviewPage } from './pages/portal/OverviewPage';
+import { AnalyticsDashboard } from './pages/portal/AnalyticsDashboard';
+import { PageDetailPage } from './pages/portal/analytics/PageDetailPage';
+import { KeywordDetailPage } from './pages/portal/analytics/KeywordDetailPage';
+import { ServicesPage as PortalServicesPage } from './pages/portal/ServicesPage';
+import { ServiceDetailPage } from './pages/portal/ServiceDetailPage';
+import { ProjectPage } from './pages/portal/ProjectPage';
+import { AssetsPage } from './pages/portal/AssetsPage';
+import { NotesPage } from './pages/portal/NotesPage';
+import { MessagesPage } from './pages/portal/MessagesPage';
+import { BillingPage } from './pages/portal/BillingPage';
+import { SettingsPage } from './pages/portal/SettingsPage';
 import { BookCallPage } from './pages/booking/BookCallPage';
 import { ScheduleCallPage } from './pages/booking/ScheduleCallPage';
 import { BookingConfirmation } from './pages/booking/BookingConfirmation';
@@ -89,7 +101,20 @@ export default function App() {
               <Route path="/onboarding/success" element={<ProtectedRoute><OnboardingSuccess /></ProtectedRoute>} />
 
               {/* Portal (protected) */}
-              <Route path="/portal" element={<ProtectedRoute><PortalDashboard /></ProtectedRoute>} />
+              <Route path="/portal" element={<ProtectedRoute><PortalLayout /></ProtectedRoute>}>
+                <Route index element={<OverviewPage />} />
+                <Route path="analytics" element={<AnalyticsDashboard />} />
+                <Route path="analytics/page/:pageUrl" element={<PageDetailPage />} />
+                <Route path="analytics/keyword/:keyword" element={<KeywordDetailPage />} />
+                <Route path="services" element={<PortalServicesPage />} />
+                <Route path="services/:serviceId" element={<ServiceDetailPage />} />
+                <Route path="project" element={<ProjectPage />} />
+                <Route path="assets" element={<AssetsPage />} />
+                <Route path="notes" element={<NotesPage />} />
+                <Route path="messages" element={<MessagesPage />} />
+                <Route path="billing" element={<BillingPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+              </Route>
 
               {/* Book a Call Flow */}
               <Route path="/book-call" element={<BookCallPage />} />

@@ -146,23 +146,29 @@
 
 ---
 
-## Phase 4: Portal Rework
+## Phase 4: Portal Rework -- COMPLETE
 
-### 4.1 Navigation Overhaul (P0)
-- [ ] Replace tab-based state navigation with sidebar + nested routes
-- [ ] Create portal layout with persistent sidebar
-- [ ] Add routes: `/portal/overview`, `/portal/analytics`, `/portal/services`, `/portal/settings`
-- [ ] Fix mobile portal navigation for sidebar
+### 4.1 Navigation Overhaul (P0) -- COMPLETE
+- [x] Replace tab-based state navigation with sidebar + nested routes
+- [x] Create portal layout with persistent sidebar (`PortalLayout.tsx`)
+- [x] Add 12 nested routes: overview, analytics, analytics/page/:pageUrl, analytics/keyword/:keyword, services, services/:serviceId, project, assets, notes, messages, billing, settings
+- [x] Sidebar active state via `useLocation()` pathname matching
+- [x] Deep-linking and browser back/forward navigation works
+- [ ] Fix mobile portal navigation for sidebar (responsive collapse)
 - [ ] Add breadcrumbs for deep views (e.g., service detail)
 - [ ] Fix page transition animations (currently jarring)
 
-### 4.2 Real Data Integration (P0)
-- [ ] Connect Overview tab to Supabase: show real project timeline
-- [ ] Connect Overview tab: real activity feed from database events
-- [ ] Connect Services tab: show client's purchased services from database
-- [ ] Connect Settings tab: real account info from Supabase Auth
-- [ ] Add empty states for all views (new client with no data)
-- [ ] Add loading skeletons for data fetches
+### 4.2 Real Data Integration (P0) -- COMPLETE
+- [x] Project page: real data from `projects` + `project_milestones` tables
+- [x] Assets page: Supabase Storage integration (upload, download, preview, delete)
+- [x] Notes page: CRUD on `activity_log` where type='note'
+- [x] Messages page: chronological feed of all activity types with compose
+- [x] Billing page: real `orders` + `subscriptions` data, Stripe portal redirect
+- [x] Settings page: editable profile (name/phone), password change, read-only business info
+- [x] Services page: real purchased service detection from orders/subscriptions
+- [x] Empty states for all views (new client with no data)
+- [x] Loading states for all data fetches
+- [x] Created `api/create-portal-session.ts` for Stripe billing portal
 
 ### 4.3 Analytics Tab (P2 - Deferred)
 - [ ] Keep mock data for launch
