@@ -6,32 +6,30 @@ export function AuthCallbackPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Supabase client automatically handles the hash fragment token exchange.
-    // We just need to wait for the session to be established, then redirect.
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const handleCallback = async () => {
+      // Check for PKCE code in URL (OAuth redirect)
+      const code = new URL(window.location.href).searchParams.get('code');
+
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!error) {
+          navigate('/portal', { replace: true });
+          return;
+        }
+      }
+
+      // Fallback: check for existing session (hash fragment flow)
+      const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         navigate('/portal', { replace: true });
-      } else {
-        // If no session yet, listen for auth state change
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
-          if (newSession) {
-            subscription.unsubscribe();
-            navigate('/portal', { replace: true });
-          }
-        });
-
-        // Timeout fallback — if no session after 5s, redirect to login
-        const timeout = setTimeout(() => {
-          subscription.unsubscribe();
-          navigate('/login', { replace: true });
-        }, 5000);
-
-        return () => {
-          clearTimeout(timeout);
-          subscription.unsubscribe();
-        };
+        return;
       }
-    });
+
+      // No code and no session — redirect to login
+      navigate('/login', { replace: true });
+    };
+
+    handleCallback();
   }, [navigate]);
 
   return (
