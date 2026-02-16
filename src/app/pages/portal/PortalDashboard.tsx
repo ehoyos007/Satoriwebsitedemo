@@ -17,8 +17,9 @@ import {
   Sparkles,
   BarChart3,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
+import { supabase } from '@/app/lib/supabase';
 import { AddServicesView } from './AddServicesView';
 import { ServiceDetailView } from './ServiceDetailView';
 import { AnalyticsDashboard } from './AnalyticsDashboard';
@@ -29,7 +30,68 @@ export function PortalDashboard() {
   const { profile, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
-  const [purchasedServices] = useState<string[]>([]);
+  interface PurchasedService {
+    slug: string;
+    name: string;
+    amount_cents: number;
+    purchased_at: string;
+  }
+  const [purchasedServices, setPurchasedServices] = useState<PurchasedService[]>([]);
+
+  useEffect(() => {
+    async function fetchPurchasedServices() {
+      try {
+        const { data: orders } = await supabase
+          .from('orders')
+          .select('id, amount_cents, created_at, services(slug, name)')
+          .eq('status', 'paid');
+
+        const { data: subs } = await supabase
+          .from('subscriptions')
+          .select('id, created_at, services(slug, name)')
+          .in('status', ['active']);
+
+        const svcs: PurchasedService[] = [];
+        const seen = new Set<string>();
+
+        if (orders) {
+          for (const order of orders) {
+            const svc = (order as any).services;
+            if (svc?.slug && !seen.has(svc.slug)) {
+              seen.add(svc.slug);
+              svcs.push({
+                slug: svc.slug,
+                name: svc.name,
+                amount_cents: order.amount_cents,
+                purchased_at: order.created_at,
+              });
+            }
+          }
+        }
+
+        if (subs) {
+          for (const sub of subs) {
+            const svc = (sub as any).services;
+            if (svc?.slug && !seen.has(svc.slug)) {
+              seen.add(svc.slug);
+              svcs.push({
+                slug: svc.slug,
+                name: svc.name,
+                amount_cents: 0,
+                purchased_at: sub.created_at,
+              });
+            }
+          }
+        }
+
+        setPurchasedServices(svcs);
+      } catch (err) {
+        console.error('Failed to fetch purchased services:', err);
+      }
+    }
+
+    fetchPurchasedServices();
+  }, []);
 
   const handleSelectService = (serviceId: string) => {
     setSelectedServiceId(serviceId);
@@ -51,6 +113,12 @@ export function PortalDashboard() {
     'graphic-design': 'graphic-design',
     crm: 'custom-crm',
   };
+
+  // Reverse mapping for purchased service detection
+  const slugToPortalId = Object.fromEntries(
+    Object.entries(portalToSlug).map(([k, v]) => [v, k])
+  );
+  const purchasedPortalIds = purchasedServices.map(s => slugToPortalId[s.slug] || s.slug);
 
   const handlePurchaseService = (serviceId: string, _notes: string) => {
     const slug = portalToSlug[serviceId] || serviceId;
@@ -178,17 +246,20 @@ export function PortalDashboard() {
                   <p className="text-zinc-400">Here's what's happening with your website build</p>
                 </div>
 
-                {/* Show purchased services if any */}
+                {/* Show purchased services */}
                 {purchasedServices.length > 0 && (
                   <div className="glass-panel p-6 rounded-xl border border-emerald-400/20 bg-emerald-500/5">
                     <h3 className="mb-3 flex items-center gap-2">
                       <CheckCircle className="w-5 h-5 text-emerald-400" />
-                      Recently Added Services
+                      Your Active Services
                     </h3>
                     <div className="space-y-2">
-                      {purchasedServices.map((serviceId) => (
-                        <div key={serviceId} className="text-sm text-zinc-300">
-                          • Service added - setup begins within 48 hours
+                      {purchasedServices.map((svc) => (
+                        <div key={svc.slug} className="flex items-center justify-between py-1">
+                          <span className="text-sm text-zinc-300">{svc.name}</span>
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-400/20 text-emerald-400 text-xs">
+                            Active
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -385,7 +456,7 @@ export function PortalDashboard() {
             )}
 
             {activeTab === 'add-services' && !selectedServiceId && (
-              <AddServicesView onSelectService={handleSelectService} />
+              <AddServicesView onSelectService={handleSelectService} purchasedServiceIds={purchasedPortalIds} />
             )}
 
             {activeTab === 'add-services' && selectedServiceId && (

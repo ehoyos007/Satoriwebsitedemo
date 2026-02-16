@@ -30,9 +30,10 @@ interface Service {
 
 interface AddServicesViewProps {
   onSelectService: (serviceId: string) => void;
+  purchasedServiceIds?: string[];
 }
 
-export function AddServicesView({ onSelectService }: AddServicesViewProps) {
+export function AddServicesView({ onSelectService, purchasedServiceIds = [] }: AddServicesViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterGoal, setFilterGoal] = useState<'all' | 'calls' | 'reviews' | 'visibility' | 'automation'>('all');
 
@@ -259,7 +260,11 @@ export function AddServicesView({ onSelectService }: AddServicesViewProps) {
                 className="group glass-panel p-6 rounded-xl border border-white/10 hover:border-cyan-400/30 cursor-pointer transition-all relative"
               >
                 {/* Badge */}
-                {(service.popular || service.recommended) && (
+                {purchasedServiceIds.includes(service.id) ? (
+                  <div className="absolute -top-2 -right-2 px-3 py-1 rounded-full bg-emerald-500 text-white text-xs">
+                    Active
+                  </div>
+                ) : (service.popular || service.recommended) && (
                   <div className="absolute -top-2 -right-2 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-xs">
                     {service.popular ? 'Popular' : 'Recommended'}
                   </div>
@@ -317,7 +322,11 @@ export function AddServicesView({ onSelectService }: AddServicesViewProps) {
                 className="group glass-panel p-6 rounded-xl border border-white/10 hover:border-violet-400/30 cursor-pointer transition-all relative"
               >
                 {/* Badge */}
-                {(service.popular || service.recommended) && (
+                {purchasedServiceIds.includes(service.id) ? (
+                  <div className="absolute -top-2 -right-2 px-3 py-1 rounded-full bg-emerald-500 text-white text-xs">
+                    Active
+                  </div>
+                ) : (service.popular || service.recommended) && (
                   <div className="absolute -top-2 -right-2 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-xs">
                     {service.popular ? 'Popular' : 'Recommended'}
                   </div>

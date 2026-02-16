@@ -177,6 +177,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               message: `Purchased ${service.name} — $${(amountCents / 100).toFixed(2)}`,
             }),
           })
+
+          // 5. Create project for tracking
+          await supabaseAdmin('projects', {
+            method: 'POST',
+            body: JSON.stringify({
+              client_id: clientId,
+              name: service.name,
+              status: 'onboarding',
+              description: `Setup and delivery of ${service.name}`,
+            }),
+          })
+          console.log(`Project created for client ${clientId}, service ${serviceSlug}`)
         } else {
           console.error(`Could not create client or order for ${customerEmail}`)
         }
