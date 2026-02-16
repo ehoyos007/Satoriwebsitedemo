@@ -14,7 +14,7 @@
 **Completed:**
 - Created shared email helper `api/_lib/email.ts`:
   - Wraps Resend REST API in a reusable `sendEmail()` function
-  - Never throws — returns `{ success, error }` for safe fire-and-forget usage
+  - Never throws — returns `{ success, error }` for safe usage
   - Uses `RESEND_API_KEY` and `RESEND_FROM_EMAIL` env vars (already configured)
 - Created email templates `api/_lib/email-templates.ts`:
   - `orderConfirmationEmail()` — dark theme, service/amount/order summary, next steps, portal CTA
@@ -22,27 +22,38 @@
   - `paymentFailureEmail()` — red-themed alert, retry instructions, billing portal CTA
   - Shared `baseLayout()` wrapper matching existing onboarding email styling
 - Modified `api/stripe-webhook.ts`:
-  - `checkout.session.completed`: after order+project creation, sends order confirmation to customer + admin purchase notification (fire-and-forget `.then()`)
-  - `invoice.payment_failed`: after marking subscription `past_due`, looks up client email via subscription→client join and sends payment failure email (fire-and-forget)
+  - `checkout.session.completed`: after order+project creation, sends order confirmation to customer + admin purchase notification
+  - `invoice.payment_failed`: after marking subscription `past_due`, looks up client email via subscription→client join and sends payment failure email
   - `_lib` prefix ensures Vercel doesn't expose helper files as API routes
+- **Bug fix:** Initial fire-and-forget `.then()` pattern failed because Vercel kills serverless processes after response is sent. Changed to `await Promise.allSettled()` so emails complete before the function exits.
+- **Bug fix:** Import paths needed explicit `.js` extensions for Vercel's node16 module resolution.
+- Configured Supabase Dashboard SMTP via Resend — auth emails now come from `noreply@satori-labs.cloud`
+- Tested password reset email flow end-to-end (including redirect to `/reset-password`)
 
-**Design decisions:**
-- Fire-and-forget `.then()` pattern — emails never block the webhook's `200` response to Stripe
-- No separate subscription email — `checkout.session.completed` and `customer.subscription.created` fire together for recurring purchases; only send order confirmation to avoid double-emailing
-- Template functions return `{ subject, html }` which spread directly into `sendEmail()`
+**E2E Test Results:**
+| Email | Status |
+|-------|--------|
+| Order confirmation (customer) | Verified — arrives after Stripe checkout |
+| Admin purchase notification | Verified — arrives after Stripe checkout |
+| Payment failure (customer) | Deployed, awaiting test |
+| Supabase Auth SMTP (password reset) | Verified — from `noreply@satori-labs.cloud`, redirect works |
 
-**Files created (2):**
-- `api/_lib/email.ts`
-- `api/_lib/email-templates.ts`
+**Gotchas discovered:**
+- Vercel serverless kills process after `res.json()` — must `await` all async work before responding
+- Supabase Auth `recover` endpoint: `redirectTo` must be a query parameter, not JSON body (JS SDK handles this automatically)
 
-**Files modified (1):**
-- `api/stripe-webhook.ts` (added imports + email sends in 2 webhook handlers)
+**Commits:**
+- `1b7bdac` — Add transactional emails
+- `be8c58a` — Fix imports for node16 module resolution
+- `ecb4677` — Await email sends (Vercel process lifecycle fix)
+
+**Files created (2):** `api/_lib/email.ts`, `api/_lib/email-templates.ts`
+**Files modified (1):** `api/stripe-webhook.ts`
 
 **Build:** Passes with zero errors
+**Deploy:** Live at https://www.satori-labs.cloud
 
-**Remaining manual step:** Configure Supabase Dashboard SMTP (host: `smtp.resend.com`, port 587, user: `resend`, pass: API key) so auth emails (password reset, magic links) come from `noreply@satori-labs.cloud`.
-
-**Left off:** Transactional emails implemented. Next priorities: deploy + test with Stripe test events, configure Supabase SMTP, mobile portal sidebar, remaining email templates (onboarding reminders, project updates, monthly report).
+**Left off:** Transactional emails implemented and verified. Known issue: subscription checkout (monthly price) gets stuck loading Stripe page — needs investigation. Next priorities: fix subscription checkout, payment failure email test, mobile portal sidebar, remaining email templates (onboarding reminders, project updates, monthly report).
 
 ---
 
