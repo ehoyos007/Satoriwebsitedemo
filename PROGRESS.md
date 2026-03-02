@@ -35,10 +35,15 @@
 **Launch Checklist:**
 - Created `LAUNCH_CHECKLIST.md` with 9 sections and step-by-step go-live sequence
 
+**FHE-2026 Daily Page Updated:**
+- Marked 10 subtasks done (Sentry, launch checklist, 4 email templates, 4 E2E tests)
+- Updated Launch Prep and Email System parents to in_progress
+
 **Commits:**
 - `cac2bd9` — Fix messages badge ghost count and remove /design-system from footer
 - `36a7ae8` — Add Sentry monitoring, secure API endpoints, and launch checklist
 - `4084e95` — Add remaining email templates for launch
+- `8092d28` — Update PROGRESS.md with Session 20 summary
 
 **What's Left for Launch:**
 1. Create Sentry project → set `VITE_SENTRY_DSN` in Vercel
