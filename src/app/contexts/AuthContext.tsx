@@ -10,6 +10,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  profileLoading: boolean;
   isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, metadata?: { full_name?: string; phone?: string }) => Promise<{ error: string | null }>;
@@ -26,27 +27,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   const fetchProfile = async (userId: string) => {
-    // Retry once for trigger race condition (profile may not exist yet right after signup)
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
+    setProfileLoading(true);
+    try {
+      // Retry once for trigger race condition (profile may not exist yet right after signup)
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
 
-      if (data) {
-        setProfile(data);
-        return;
-      }
+        if (data) {
+          setProfile(data);
+          return;
+        }
 
-      if (attempt === 0 && error) {
-        // Wait briefly for the trigger to create the profile
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        if (attempt === 0 && error) {
+          // Wait briefly for the trigger to create the profile
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
       }
+      setProfile(null);
+    } finally {
+      setProfileLoading(false);
     }
-    setProfile(null);
   };
 
   useEffect(() => {
@@ -161,6 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         session,
         profile,
         loading,
+        profileLoading,
         isAdmin,
         signIn,
         signUp,
