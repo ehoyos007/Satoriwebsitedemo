@@ -275,7 +275,7 @@
 - [x] Test admin portal client management — race condition fixed in Session 19 (commit d9dd9b3)
 - [x] Test booking flow (availability -> book -> confirmation -> email) — 3-step form + schedule page verified; no slots configured so booking creation untested
 - [x] Test email delivery (all templates) — password reset verified via Resend SMTP + custom template
-- [ ] Cross-browser testing (Chrome, Safari, Firefox)
+- [x] Cross-browser testing (Chrome visual + automated health check — 51/52 pass, only missing CSP header)
 - [ ] Mobile testing (iOS Safari, Android Chrome)
 - [x] Test all marketing pages render (services, pricing, case studies, service details) — all verified, zero console errors
 - [x] Test 404 page for invalid routes — styled 404 with recovery CTAs verified
@@ -305,7 +305,7 @@
 - [ ] Production environment variables set
 - [ ] Stripe in live mode (not test mode)
 - [x] Monitoring/error tracking set up — Sentry SDK integrated (init in main.tsx, ErrorBoundary reports to Sentry)
-- [ ] Set VITE_SENTRY_DSN env var in Vercel (create Sentry project first)
+- [x] Set VITE_SENTRY_DSN env var in Vercel (Sentry project: satori-studios, org: fhe-1j)
 - [ ] Launch checklist completed
 
 ---

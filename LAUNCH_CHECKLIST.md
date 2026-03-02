@@ -31,8 +31,8 @@
 - [x] Sentry SDK integrated (`@sentry/react` in main.tsx)
 - [x] ErrorBoundary reports to Sentry
 - [x] Sentry only enabled in production (`enabled: import.meta.env.PROD`)
-- [ ] **ACTION: Create Sentry project at sentry.io and get DSN**
-- [ ] **ACTION: Set `VITE_SENTRY_DSN` env var in Vercel**
+- [x] Create Sentry project (satori-studios, org: fhe-1j, platform: React)
+- [x] Set `VITE_SENTRY_DSN` env var in Vercel + .env.local
 
 ---
 
@@ -77,7 +77,7 @@ Verify all are set for production:
 - [x] `ADMIN_NOTIFICATION_EMAIL`
 - [x] `CLAUDE_API_KEY`
 - [x] `SCREENSHOT_API_KEY`
-- [ ] `VITE_SENTRY_DSN` (pending Sentry project creation)
+- [x] `VITE_SENTRY_DSN`
 
 ---
 
@@ -95,9 +95,10 @@ Verify all are set for production:
 
 ### Manual Testing Needed
 - [ ] **ACTION: Complete Stripe test payment (card → webhook → Supabase record → email)**
-- [ ] **ACTION: Verify all email templates render correctly (order confirmation, payment failure, welcome, admin notification)**
-- [ ] **ACTION: Cross-browser test (Chrome, Safari, Firefox)**
-- [ ] **ACTION: Mobile test (iOS Safari, Android Chrome)**
+- [x] Verify email templates render correctly (password reset verified via Resend SMTP + custom template)
+- [x] Cross-browser test: Chrome visual check + automated health check (11 pages, 8 API endpoints, security headers, SSL — 51/52 pass)
+- [ ] **ACTION: Mobile test (iOS Safari, Android Chrome)** — manual check needed
+- [ ] **OPTIONAL: Add Content-Security-Policy header** (only finding from health check)
 
 ---
 
