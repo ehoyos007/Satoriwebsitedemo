@@ -55,7 +55,7 @@
 - [ ] Set up preview deployments on PRs
 - [ ] Create staging environment with separate Supabase/Stripe configs
 
-### 1.4 Email System (P1) -- MOSTLY COMPLETE
+### 1.4 Email System (P1) -- COMPLETE
 - [x] Set up Resend account and verify domain (DNS records in Vercel)
 - [x] Set Vercel env vars: RESEND_API_KEY, RESEND_FROM_EMAIL, ADMIN_NOTIFICATION_EMAIL
 - [x] Create onboarding welcome email (styled HTML via Resend REST API)
@@ -71,8 +71,8 @@
 - [x] Create email templates: onboarding reminder, getting-started guide — `onboardingReminderEmail()`, `gettingStartedEmail()`
 - [x] Create email templates: project updates, milestone notifications — `projectUpdateEmail()`
 - [x] Create email template: monthly report — `monthlyReportEmail()`
-- [ ] Wire up Supabase Auth to send emails via Resend (custom SMTP — manual Dashboard config)
-- [ ] Paste auth templates into Supabase Dashboard (signup, password reset, magic link, email change)
+- [x] Wire up Supabase Auth to send emails via Resend (custom SMTP — manual Dashboard config)
+- [x] Paste auth templates into Supabase Dashboard (signup, password reset, magic link, email change)
 
 ---
 
@@ -274,7 +274,7 @@
 - [x] Test portal data displays correctly per client — all 9 portal routes render with real data + empty states
 - [x] Test admin portal client management — race condition fixed in Session 19 (commit d9dd9b3)
 - [x] Test booking flow (availability -> book -> confirmation -> email) — 3-step form + schedule page verified; no slots configured so booking creation untested
-- [ ] Test email delivery (all templates)
+- [x] Test email delivery (all templates) — password reset verified via Resend SMTP + custom template
 - [ ] Cross-browser testing (Chrome, Safari, Firefox)
 - [ ] Mobile testing (iOS Safari, Android Chrome)
 - [x] Test all marketing pages render (services, pricing, case studies, service details) — all verified, zero console errors

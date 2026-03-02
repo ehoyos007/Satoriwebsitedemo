@@ -1,11 +1,64 @@
 # PROGRESS.md - Satori Studios Website
 
 > Session-by-session log of work completed.
-> Last updated: 2026-03-01
+> Last updated: 2026-03-02
 
 ---
 
 ## Session Log
+
+### 2026-03-02 (Session 23) | Email System Completion
+
+**Summary:** Completed Phase 1.4 Email System — configured Supabase custom SMTP via Resend and pasted all 4 auth email templates into Supabase Dashboard.
+
+**Completed:**
+- Configured custom SMTP in Supabase Dashboard (Resend: smtp.resend.com:465, noreply@satori-labs.cloud)
+- Pasted 4 auth email templates into Supabase Dashboard: signup confirmation, password reset, magic link, email change
+- Verified email delivery end-to-end: triggered password reset → received styled email via Resend SMTP with custom dark-theme template
+- Marked Phase 1.4 Email System as COMPLETE in TASKS.md
+
+**Phase 1.4 Email System:** COMPLETE (all 13 templates created, SMTP configured, delivery verified)
+
+**Remaining P0 Launch Blockers:**
+- Test Stripe webhooks (manual test payment)
+- Cross-browser + mobile testing
+- Set VITE_SENTRY_DSN in Vercel
+- Stripe live mode switch
+- DNS / production domain
+- Final launch checklist
+
+---
+
+### 2026-03-02 (Session 22) | Booking Flow Verification & Availability Seeding
+
+**Summary:** Verified full booking flow end-to-end on production, seeded availability slots in Supabase, and fixed DST timezone issue in slot generation.
+
+**Booking Flow Verification:**
+- Confirmed 3-step lead capture form is fully functional (10 fields across 3 steps)
+- Validated per-step form validation, error messages, sessionStorage persistence
+- Tested schedule page loads slots from Supabase `availability_slots` table
+- Completed full booking through confirmation page on production (satori-labs.cloud)
+- Verified booking record created in Supabase with correct guest data, status: confirmed
+- Confirmed email notifications triggered (guest confirmation + admin notification via Resend)
+
+**Availability Slots Seeded:**
+- Seeded 320 slots: every Monday + Wednesday, 12:00 PM – 5:00 PM ET, 15-min intervals
+- Coverage: March 2 – April 22, 2026 (8 weeks, 16 days)
+
+**DST Timezone Fix:**
+- Initial seed used fixed EST offset (+5h), causing post-DST slots to show 1:00 PM instead of 12:00 PM
+- Regenerated all slots using Intl API to detect correct UTC offset per date
+- Pre-DST (Mar 2–4): 17:00 UTC = 12:00 PM EST
+- Post-DST (Mar 9+): 16:00 UTC = 12:00 PM EDT
+- Verified on production: times now display correctly across DST boundary
+
+**Test Booking Created:**
+- Booking ID: `d6fd3cef-9e1c-4e9c-b2d8-5785d6159882`
+- Guest: John Smith, john.smith@aceplumbing.com, (555) 867-5309
+- Service: home-services — Growth System ($2.5K-$10K)
+- Slot: Mon Mar 9, 2:00–2:15 PM ET
+
+---
 
 ### 2026-03-01 (Session 21) | Performance Optimization & Security Hardening
 
