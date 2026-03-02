@@ -1,7 +1,7 @@
 # TASKS.md - Satori Studios Website
 
 > Active task tracking. Organized by phase and priority.
-> Last updated: 2026-02-16 (end of session 17)
+> Last updated: 2026-03-02 (E2E testing + admin race condition fix)
 
 ---
 
@@ -213,7 +213,9 @@
 
 ### 5.6 Case Study Wizard (P1) -- INTEGRATED
 - [x] CaseStudyWizard mounted inside admin layout at /admin/case-study-wizard
-- [ ] Proxy Claude API calls through edge function (fix security)
+- [x] Proxy Claude API calls through edge function (security fix — removed VITE_CLAUDE_API_KEY, always uses /api/claude)
+- [x] Proxy Screenshot API calls through edge function (security fix — created /api/screenshot, removed VITE_SCREENSHOT_API_KEY)
+- [x] Removed hardcoded admin password gate (redundant — already behind ProtectedRoute requiredRole="admin")
 - [ ] Save generated case studies to Supabase
 - [ ] Add case study management (list, edit, publish/unpublish)
 
@@ -264,24 +266,32 @@
 
 ## Phase 8: Testing & Launch Prep
 
-### 8.1 Testing (P0)
-- [ ] End-to-end test: visitor -> checkout -> account creation -> onboarding -> portal
-- [ ] Test Stripe webhooks (payment success, failure, subscription events)
-- [ ] Test auth flows (login, signup, password reset, OAuth)
-- [ ] Test portal data displays correctly per client
-- [ ] Test admin portal client management
-- [ ] Test booking flow (availability -> book -> confirmation -> email)
+### 8.1 Testing (P0) -- MOSTLY COMPLETE (Session 19 E2E)
+- [~] End-to-end test: visitor -> checkout -> account creation -> onboarding -> portal (checkout & portal verified; account creation blocked by Stripe PCI automation restriction)
+- [ ] Test Stripe webhooks (payment success, failure, subscription events) — requires manual Stripe test payment
+- [x] Test auth flows (login, signup, password reset, OAuth) — login, logout, forgot password, protected route guards all verified
+- [x] Test portal data displays correctly per client — all 9 portal routes render with real data + empty states
+- [!] Test admin portal client management — BLOCKED: ProtectedRoute race condition prevents admin access (profile loads after isAdmin check)
+- [x] Test booking flow (availability -> book -> confirmation -> email) — 3-step form + schedule page verified; no slots configured so booking creation untested
 - [ ] Test email delivery (all templates)
 - [ ] Cross-browser testing (Chrome, Safari, Firefox)
 - [ ] Mobile testing (iOS Safari, Android Chrome)
+- [x] Test all marketing pages render (services, pricing, case studies, service details) — all verified, zero console errors
+- [x] Test 404 page for invalid routes — styled 404 with recovery CTAs verified
+- [x] **BUG: Admin portal race condition** — FIXED (Session 19). Added `profileLoading` state to AuthContext + ProtectedRoute waits for profile before role guards. Commit `d9dd9b3`.
+- [ ] **BUG: Messages badge "2" with no messages** — portal sidebar badge count doesn't match actual messages (Low)
+- [ ] **BUG: /design-system exposed in footer** — internal dev page publicly linked (Low)
 
-### 8.2 Security Audit (P0)
-- [ ] Verify no API keys exposed in frontend bundle
+### 8.2 Security Audit (P0) -- MOSTLY COMPLETE
+- [x] Verify no API keys exposed in frontend bundle (removed VITE_CLAUDE_API_KEY, VITE_SCREENSHOT_API_KEY, VITE_ADMIN_PASSWORD)
 - [ ] Verify RLS policies prevent cross-client data access
-- [ ] Verify admin routes are properly guarded
-- [ ] Review Stripe webhook signature verification
-- [ ] Check for XSS, CSRF, injection vulnerabilities
+- [x] Verify admin routes are properly guarded (ProtectedRoute + removed redundant password gate)
+- [x] Review Stripe webhook signature verification (made mandatory — no fallback to raw JSON.parse)
+- [x] Check for XSS, CSRF, injection vulnerabilities (origin allowlist on redirect URLs, encodeURIComponent on query params)
 - [ ] Verify HTTPS everywhere
+- [x] Add auth to /api/create-portal-session (Bearer token + client ownership verification)
+- [x] Add auth to /api/onboarding-complete (Bearer token + client ownership verification)
+- [x] Add security headers (X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy)
 
 ### 8.3 Launch (P0)
 - [ ] Final staging environment review

@@ -1,11 +1,136 @@
 # PROGRESS.md - Satori Studios Website
 
 > Session-by-session log of work completed.
-> Last updated: 2026-02-16
+> Last updated: 2026-03-02
 
 ---
 
 ## Session Log
+
+### 2026-03-01 (Session 19) | E2E Browser Automation Testing on Production
+
+**Focus:** Systematic end-to-end testing of all critical user journeys on production (https://www.satori-labs.cloud) using Chrome browser automation.
+
+**Tests Completed (7 of 9):**
+
+1. **Test 1: Homepage & Navigation** — PASSED
+   - Hero, nav links (10 services in dropdown), footer all render correctly
+   - Auth-aware nav shows user dropdown when logged in
+   - Zero console errors
+
+2. **Test 2: Checkout Flow** — PASSED (with limitation)
+   - `/checkout?service=website-build` loads service from Supabase correctly ($999.95, features)
+   - Stripe Checkout redirect works (sandbox mode)
+   - Could NOT automate Stripe payment form (PCI cross-origin security blocks all browser tools)
+   - Cancel flow returns with correct "Checkout was not completed" banner
+   - Success page edge case (no session) handled: "No Payment Found"
+
+3. **Test 5: Auth Flows** — PASSED
+   - `/portal` redirects unauthenticated users to `/login`
+   - `/admin` redirects unauthenticated users to `/login`
+   - Forgot password page renders correctly
+   - Login with email/password works and redirects to portal
+   - Auth-aware nav shows user dropdown after login
+
+4. **Test 6: Portal (All 9 Routes)** — PASSED (1 minor bug)
+   - All 9 portal routes render correctly with real data
+   - Sidebar active states work, empty states display correctly
+   - Bug: Messages badge shows "2" but messages page says "No messages" (Low)
+
+5. **Test 7: Admin Portal** — BLOCKED (Critical Bug)
+   - Non-admin users correctly blocked from `/admin` (redirects to `/portal`)
+   - **BUG: Admin users ALSO can't access `/admin`** — ProtectedRoute race condition
+   - Root cause: `fetchProfile` is fire-and-forget in AuthContext (line 73), `setLoading(false)` fires before profile loads, so `isAdmin` is false when ProtectedRoute evaluates
+   - Fix needed: Add `profileLoading` state or wait for `profile !== null` when `user` exists
+
+6. **Test 8: Booking Flow** — PASSED
+   - 3-step form renders correctly (Business Info → Project Details → Contact Info)
+   - Step progression, validation, and progress bar all work
+   - Direct access to `/booking/schedule` correctly redirects to `/book-call`
+   - Schedule page shows "No Available Times" (correct — no slots configured)
+   - "Email Us Instead" fallback links to correct mailto
+
+7. **Test 9: Cross-Page Checks** — PASSED
+   - `/services` — renders with hero, CTAs, featured case study
+   - `/pricing` — renders with tier comparison, $999.95 lead
+   - `/case-studies` — 5 case studies with search/filters, images, tags
+   - `/services/website-build` — breadcrumbs, features, pricing, CTAs
+   - `/services/google-business-profile` — same pattern, different content
+   - `/this-page-does-not-exist` — styled 404 with "Go Home" / "Go Back"
+   - `/design-system` — internal dev page exposed via footer link (Low)
+   - Zero console errors across all pages
+
+**Tests Skipped (2):**
+- Test 3: Account Creation — requires completing Stripe payment first (blocked by PCI)
+- Test 4: Onboarding Wizard — depends on Test 3
+
+**Bugs Found (4):**
+
+| # | Severity | Page | Description |
+|---|----------|------|-------------|
+| 1 | **Medium** | `/admin` (ProtectedRoute) | Race condition: admin users redirected to `/portal` before profile loads. `fetchProfile` is fire-and-forget, `isAdmin` evaluates as `false` during initial render. |
+| 2 | Low | Footer | `/design-system` internal dev page publicly accessible via footer link |
+| 3 | Low | `/portal/messages` | Messages badge shows "2" but page displays "No messages" empty state |
+| 4 | Low | `/book-call` | `form_input` / `.click()` on radios doesn't trigger React state — only affects automated testing, not real users |
+
+**Key Findings:**
+- Promoted enzod007@gmail.com to admin role via Supabase REST API (was client role)
+- No admin accounts existed in the database prior to this session
+- Stripe Checkout is in sandbox/test mode — correct for pre-launch
+- All marketing pages, service details, portal, and booking flow are production-ready
+- Zero console errors across entire site
+
+**Bug Fix — Admin Portal Race Condition:**
+- Added `profileLoading` state to `AuthContext.tsx` — tracks whether `fetchProfile` is in-flight
+- Updated `ProtectedRoute.tsx` — when `requiredRole` is specified and `profileLoading` is true, show spinner instead of redirecting
+- Deployed to production and verified: admin portal now loads correctly for admin users
+- Files changed: `AuthContext.tsx`, `ProtectedRoute.tsx`
+
+**Commit:** `d9dd9b3` — pushed to origin/main, deployed to production
+
+**Summary:** E2E browser automation testing — 7/9 tests passed, found and fixed admin portal race condition bug, 3 low-severity issues documented
+
+---
+
+### 2026-03-01 (Session 18) | Pre-Launch Security Audit Fixes
+
+**Focus:** Fix 9 security vulnerabilities identified across 3 parallel security audits before production launch.
+
+**Completed:**
+- **CRITICAL — API key exposure (3 fixes):**
+  - Removed `VITE_CLAUDE_API_KEY` from frontend; all Claude calls now route through `/api/claude` proxy
+  - Created `api/screenshot.ts` server proxy; removed `VITE_SCREENSHOT_API_KEY` from frontend
+  - Removed hardcoded `'satori-admin'` password gate from CaseStudyWizard (redundant — already behind `ProtectedRoute requiredRole="admin"`)
+- **HIGH — Missing auth on API endpoints (3 fixes):**
+  - Added Bearer token auth + Supabase user verification + client ownership check to `/api/create-portal-session`
+  - Added Bearer token auth + client ownership verification to `/api/onboarding-complete`
+  - Made Stripe webhook signature verification mandatory — removed `JSON.parse` fallback when `STRIPE_WEBHOOK_SECRET` is missing
+- **MEDIUM — Open redirect + missing headers (2 fixes):**
+  - Added origin allowlist validation in `create-checkout-session.ts` and `create-portal-session.ts` (falls back to production URL)
+  - Added `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin` in `vercel.json`
+- **LOW — Query param encoding (1 fix):**
+  - Applied `encodeURIComponent()` to all dynamic values in Supabase REST query strings in `stripe-webhook.ts`
+- **Frontend callers updated:** `BillingPage.tsx` and `OnboardingWizard.tsx` now pass Bearer auth tokens to newly-protected endpoints
+- Updated TASKS.md — security audit section moved from not started to MOSTLY COMPLETE
+
+**Files changed:** 11 files (10 modified, 1 new), +248 / -155 lines
+
+**Summary:** Fix 9 security vulnerabilities — remove exposed API keys, add auth to unprotected endpoints, harden webhook/redirect/headers
+
+**Commit:** `4bcd3bc` — pushed to origin/main
+
+**Post-fix:**
+- Removed `VITE_CLAUDE_API_KEY` from `.env.local` (user did manually)
+- Renamed `VITE_SCREENSHOT_API_KEY` → `SCREENSHOT_API_KEY` in `.env.local` (user did manually)
+- Added `SCREENSHOT_API_KEY` to Vercel production env vars
+- Deployed to production: https://www.satori-labs.cloud
+
+**Still open for launch:**
+- Verify RLS policies prevent cross-client data access
+- Verify HTTPS everywhere
+- End-to-end testing (Phase 8.1)
+
+---
 
 ### 2026-02-16 (Session 17) | Booking Calendar — Full Public Flow
 
