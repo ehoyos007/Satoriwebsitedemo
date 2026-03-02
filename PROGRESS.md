@@ -1,11 +1,54 @@
 # PROGRESS.md - Satori Studios Website
 
 > Session-by-session log of work completed.
-> Last updated: 2026-03-02
+> Last updated: 2026-03-01
 
 ---
 
 ## Session Log
+
+### 2026-03-01 (Session 20) | Bug Fixes, Security Hardening, Sentry, Email Templates & Launch Checklist
+
+**Summary:** Fixed 2 UI bugs, completed security audit, added Sentry monitoring, created all remaining email templates, and built comprehensive launch checklist.
+
+**Bug Fixes:**
+- Removed hardcoded `badge: 2` on Messages nav item in PortalLayout (showed count with no messages)
+- Replaced `/design-system` internal dev page link in footer with "Contact Us" → `/book-call`
+
+**Security Hardening:**
+- Added admin auth (Bearer token + role check) to `/api/claude` and `/api/screenshot` — previously completely open
+- Wired auth tokens into frontend `claude-api.ts` and `screenshot-api.ts`
+- Dropped overly permissive `"Service role can manage orders"` RLS policy (any authed user could modify any order) — migration `20260301000001` applied to production
+- Added HSTS header (max-age=63072000, includeSubDomains, preload) and Permissions-Policy
+- Full RLS audit: all 12 tables properly isolated
+
+**Sentry Monitoring:**
+- Installed `@sentry/react`, initialized in `main.tsx` (production-only, 20% traces, 100% error replays)
+- ErrorBoundary now reports to Sentry with component stack traces
+- Pending: create Sentry project + set `VITE_SENTRY_DSN` in Vercel
+
+**Email Templates (7 new):**
+- Code-callable: `gettingStartedEmail()`, `onboardingReminderEmail()`, `projectUpdateEmail()`, `monthlyReportEmail()`
+- Supabase Auth (for Dashboard): signup confirmation, password reset, magic link, email change
+- All match existing dark theme with gradient accents
+
+**Launch Checklist:**
+- Created `LAUNCH_CHECKLIST.md` with 9 sections and step-by-step go-live sequence
+
+**Commits:**
+- `cac2bd9` — Fix messages badge ghost count and remove /design-system from footer
+- `36a7ae8` — Add Sentry monitoring, secure API endpoints, and launch checklist
+- `4084e95` — Add remaining email templates for launch
+
+**What's Left for Launch:**
+1. Create Sentry project → set `VITE_SENTRY_DSN` in Vercel
+2. Switch Stripe to live mode → create live products/prices → update env vars + Supabase price IDs
+3. Paste auth email templates into Supabase Dashboard
+4. Configure Supabase custom SMTP (Resend) for auth emails
+5. Manual testing: Stripe test payment, email delivery, cross-browser, mobile
+6. DNS if changing domain
+
+---
 
 ### 2026-03-01 (Session 19) | E2E Browser Automation Testing on Production
 
