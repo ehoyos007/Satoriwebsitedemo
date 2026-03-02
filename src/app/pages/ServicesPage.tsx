@@ -1,7 +1,8 @@
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { 
-  ArrowRight, 
+import { track } from '@vercel/analytics';
+import {
+  ArrowRight,
   Globe, 
   MapPin, 
   Star, 
@@ -219,6 +220,7 @@ export function ServicesPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/pricing"
+                onClick={() => track('cta_clicked', { cta: 'buy_website', location: 'hero', page: 'services' })}
                 className="group relative px-8 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/50"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
@@ -229,6 +231,7 @@ export function ServicesPage() {
               </Link>
               <a
                 href="#contact"
+                onClick={() => track('cta_clicked', { cta: 'book_call', location: 'hero', page: 'services' })}
                 className="px-8 py-4 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all backdrop-blur-sm"
               >
                 Book a Call
@@ -869,6 +872,7 @@ export function ServicesPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link
                 to="/pricing"
+                onClick={() => track('cta_clicked', { cta: 'buy_website', location: 'final_cta', page: 'services' })}
                 className="group relative px-8 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/50"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
@@ -879,6 +883,7 @@ export function ServicesPage() {
               </Link>
               <a
                 href="#contact"
+                onClick={() => track('cta_clicked', { cta: 'book_call', location: 'final_cta', page: 'services' })}
                 className="px-8 py-4 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all backdrop-blur-sm"
               >
                 Book a Call

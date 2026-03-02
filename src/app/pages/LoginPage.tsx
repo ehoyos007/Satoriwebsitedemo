@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { track } from '@vercel/analytics';
 import { LogIn, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import { SEO } from '@/app/components/SEO';
@@ -52,6 +53,7 @@ export function LoginPage() {
     if (!validateFields()) return;
 
     setIsLoading(true);
+    track('login_attempted', { method: 'email' });
 
     const { error: signInError } = await signIn(email, password);
 
@@ -65,6 +67,7 @@ export function LoginPage() {
   };
 
   const handleGoogleSignIn = async () => {
+    track('login_attempted', { method: 'google' });
     const { error: googleError } = await signInWithGoogle();
     if (googleError) {
       setError(googleError);

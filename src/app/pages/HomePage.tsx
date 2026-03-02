@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
+import { track } from '@vercel/analytics';
 import { ArrowRight, ChartBar, TrendingUp, Star, MapPin, Phone, Bot, Globe, Zap, Search, Megaphone } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { SEO } from '../components/SEO';
@@ -42,6 +43,7 @@ export function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link
                 to="/checkout?service=website-build"
+                onClick={() => track('cta_clicked', { cta: 'buy_website', location: 'hero', page: 'homepage' })}
                 className="group relative px-8 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/50"
               >
                 <span className="relative z-10 flex items-center justify-center gap-2">
@@ -52,6 +54,7 @@ export function HomePage() {
               </Link>
               <Link
                 to="/book-call"
+                onClick={() => track('cta_clicked', { cta: 'book_call', location: 'hero', page: 'homepage' })}
                 className="px-8 py-4 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all backdrop-blur-sm"
               >
                 Book a Call
@@ -526,6 +529,7 @@ export function HomePage() {
           <div className="text-center flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/pricing"
+              onClick={() => track('cta_clicked', { cta: 'buy_website', location: 'pricing_teaser', page: 'homepage' })}
               className="group relative px-8 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/50"
             >
               <span className="relative z-10">Buy Website — $999.95</span>
@@ -533,6 +537,7 @@ export function HomePage() {
             </Link>
             <Link
               to="/book-call"
+              onClick={() => track('cta_clicked', { cta: 'book_call', location: 'pricing_teaser', page: 'homepage' })}
               className="px-8 py-4 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all backdrop-blur-sm"
             >
               Book a Call
@@ -630,6 +635,7 @@ export function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/pricing"
+                onClick={() => track('cta_clicked', { cta: 'buy_website', location: 'final_cta', page: 'homepage' })}
                 className="group relative px-8 py-4 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/50"
               >
                 <span className="relative z-10">Buy Website — $999.95</span>
@@ -637,6 +643,7 @@ export function HomePage() {
               </Link>
               <Link
                 to="/book-call"
+                onClick={() => track('cta_clicked', { cta: 'book_call', location: 'final_cta', page: 'homepage' })}
                 className="px-8 py-4 rounded-lg border border-zinc-700 hover:border-cyan-400/50 hover:bg-cyan-500/5 transition-all backdrop-blur-sm"
               >
                 Book a Call

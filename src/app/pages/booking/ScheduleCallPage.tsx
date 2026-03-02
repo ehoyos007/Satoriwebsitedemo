@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { track } from '@vercel/analytics';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, ArrowLeft, Calendar, CheckCircle, Clock, Video, Globe, Loader2 } from 'lucide-react';
 import { useState, useEffect, useMemo } from 'react';
@@ -142,6 +143,7 @@ export function ScheduleCallPage() {
 
   const handleConfirm = () => {
     if (!selectedSlot) return;
+    track('booking_confirmed', { timezone });
     navigate('/booking/confirmation', {
       state: {
         slotId: selectedSlot.id,

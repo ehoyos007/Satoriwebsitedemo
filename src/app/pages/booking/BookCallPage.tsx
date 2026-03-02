@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
+import { track } from '@vercel/analytics';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
@@ -85,10 +86,11 @@ export function BookCallPage() {
 
   const handleNext = () => {
     if (!validateStep()) return;
+    track('booking_step_completed', { step: currentStep, totalSteps });
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Save form to sessionStorage and navigate to schedule page
+      track('booking_form_submitted', { industry: form.industry, goal: form.goal, budget: form.budget });
       sessionStorage.setItem(STORAGE_KEY, JSON.stringify(form));
       navigate('/booking/schedule');
     }

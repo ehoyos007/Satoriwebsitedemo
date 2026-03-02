@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { track } from '@vercel/analytics';
 import { CheckCircle, Lock, Clock, Shield, ArrowRight, Loader2, AlertCircle, XCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
@@ -84,6 +85,7 @@ export function CheckoutPage() {
 
     setCheckoutLoading(true);
     setError(null);
+    track('checkout_started', { service: service.name, priceType, slug: service.slug });
 
     try {
       const res = await retryFetch('/api/create-checkout-session', {
