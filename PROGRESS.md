@@ -7,6 +7,35 @@
 
 ## Session Log
 
+### 2026-03-02 (Session 24) | Vercel Analytics & Speed Insights Integration
+
+**Summary:** Integrated Vercel Web Analytics and Speed Insights for privacy-friendly visitor tracking and Core Web Vitals monitoring, with custom event tracking on all key conversion points.
+
+**Packages Added:**
+- `@vercel/analytics@1.6.1` — pageview tracking + custom events (cookie-free, 100K events/mo included on Pro)
+- `@vercel/speed-insights@1.3.1` — real-user Core Web Vitals (FCP, LCP, CLS, INP)
+
+**Root Setup (App.tsx):**
+- Added `<Analytics />` component — auto-tracks pageviews on every route change
+- Added `<SpeedInsights />` component — measures performance metrics per route
+
+**Custom Event Tracking (7 files instrumented):**
+- `cta_clicked` — 11 CTAs across HomePage (3), PricingPage (5), ServicesPage (3) with location/page properties
+- `service_card_clicked` — all 9 service cards on PricingPage additional services grid
+- `checkout_started` — CheckoutPage payment buttons (service name, price type, slug)
+- `booking_step_completed` — BookCallPage 3-step form progression
+- `booking_form_submitted` — BookCallPage final submit (industry, goal, budget)
+- `booking_confirmed` — ScheduleCallPage slot confirmation (timezone)
+- `login_attempted` — LoginPage email + Google OAuth attempts
+
+**Dashboard Enabled:**
+- Web Analytics enabled in Vercel Dashboard (verified receiving data)
+- Speed Insights enabled in Vercel Dashboard (verified receiving data)
+
+**Cost Impact:** +$0/mo for Web Analytics (within 100K included events), +$10/mo for Speed Insights = $30/mo total Vercel spend
+
+---
+
 ### 2026-03-02 (Session 23) | Email System, Sentry Setup & Production Health Check
 
 **Summary:** Completed Phase 1.4 Email System, created Sentry project with DSN, and ran comprehensive production health check (51/52 pass).

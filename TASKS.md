@@ -299,13 +299,18 @@
 - [x] Booking race condition — atomic slot claim with PATCH WHERE is_booked=false (Session 21)
 - [x] Checkout origin hardening — reject unknown origins, removed client-controlled redirect URLs (Session 21)
 
-### 8.3 Launch (P0)
+### 8.3 Analytics & Monitoring (P1) -- COMPLETE
+- [x] Vercel Web Analytics — pageview + custom event tracking (cookie-free, privacy-friendly)
+- [x] Vercel Speed Insights — real-user Core Web Vitals (FCP, LCP, CLS, INP)
+- [x] Custom event tracking on key conversion points (CTAs, checkout, booking, login — 7 files, 6 event types)
+- [x] Monitoring/error tracking set up — Sentry SDK integrated (init in main.tsx, ErrorBoundary reports to Sentry)
+- [x] Set VITE_SENTRY_DSN env var in Vercel (Sentry project: satori-studios, org: fhe-1j)
+
+### 8.4 Launch (P0)
 - [ ] Final staging environment review
 - [ ] DNS configuration for production domain
 - [ ] Production environment variables set
 - [ ] Stripe in live mode (not test mode)
-- [x] Monitoring/error tracking set up — Sentry SDK integrated (init in main.tsx, ErrorBoundary reports to Sentry)
-- [x] Set VITE_SENTRY_DSN env var in Vercel (Sentry project: satori-studios, org: fhe-1j)
 - [ ] Launch checklist completed
 
 ---
@@ -321,5 +326,6 @@
 - [ ] Slack integration for internal alerts
 - [ ] Multi-tenant isolation improvements
 - [x] Performance optimization (code splitting, lazy loading) — Session 21: 1,658KB→279KB main chunk, 33 lazy-loaded pages
-- [ ] A/B testing on landing pages
+- [ ] A/B testing on landing pages (Vercel Flags integration available)
 - [ ] Referral program system
+- [ ] GA4 integration alongside Vercel Analytics (for Google Ads attribution if needed)
