@@ -271,7 +271,7 @@
 - [ ] Test Stripe webhooks (payment success, failure, subscription events) — requires manual Stripe test payment
 - [x] Test auth flows (login, signup, password reset, OAuth) — login, logout, forgot password, protected route guards all verified
 - [x] Test portal data displays correctly per client — all 9 portal routes render with real data + empty states
-- [!] Test admin portal client management — BLOCKED: ProtectedRoute race condition prevents admin access (profile loads after isAdmin check)
+- [x] Test admin portal client management — race condition fixed in Session 19 (commit d9dd9b3)
 - [x] Test booking flow (availability -> book -> confirmation -> email) — 3-step form + schedule page verified; no slots configured so booking creation untested
 - [ ] Test email delivery (all templates)
 - [ ] Cross-browser testing (Chrome, Safari, Firefox)
@@ -282,23 +282,26 @@
 - [x] **BUG: Messages badge "2" with no messages** — FIXED: removed hardcoded `badge: 2` from PortalLayout nav item
 - [x] **BUG: /design-system exposed in footer** — FIXED: replaced with "Contact Us" → `/book-call`
 
-### 8.2 Security Audit (P0) -- MOSTLY COMPLETE
+### 8.2 Security Audit (P0) -- COMPLETE
 - [x] Verify no API keys exposed in frontend bundle (removed VITE_CLAUDE_API_KEY, VITE_SCREENSHOT_API_KEY, VITE_ADMIN_PASSWORD)
-- [ ] Verify RLS policies prevent cross-client data access
+- [x] Verify RLS policies prevent cross-client data access — audited all 12 tables; dropped overly permissive "Service role can manage orders" policy (migration 20260301000001)
 - [x] Verify admin routes are properly guarded (ProtectedRoute + removed redundant password gate)
 - [x] Review Stripe webhook signature verification (made mandatory — no fallback to raw JSON.parse)
 - [x] Check for XSS, CSRF, injection vulnerabilities (origin allowlist on redirect URLs, encodeURIComponent on query params)
-- [ ] Verify HTTPS everywhere
+- [x] Verify HTTPS everywhere — HSTS header added (max-age=63072000, includeSubDomains, preload); Vercel enforces HTTPS by default
 - [x] Add auth to /api/create-portal-session (Bearer token + client ownership verification)
 - [x] Add auth to /api/onboarding-complete (Bearer token + client ownership verification)
-- [x] Add security headers (X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy)
+- [x] Add auth to /api/claude (Bearer token + admin role verification)
+- [x] Add auth to /api/screenshot (Bearer token + admin role verification)
+- [x] Add security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS, Permissions-Policy)
 
 ### 8.3 Launch (P0)
 - [ ] Final staging environment review
 - [ ] DNS configuration for production domain
 - [ ] Production environment variables set
 - [ ] Stripe in live mode (not test mode)
-- [ ] Monitoring/error tracking set up (Sentry or similar)
+- [x] Monitoring/error tracking set up — Sentry SDK integrated (init in main.tsx, ErrorBoundary reports to Sentry)
+- [ ] Set VITE_SENTRY_DSN env var in Vercel (create Sentry project first)
 - [ ] Launch checklist completed
 
 ---

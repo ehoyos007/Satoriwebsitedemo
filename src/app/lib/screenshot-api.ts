@@ -21,6 +21,8 @@ export interface CaptureProgress {
   mobile: 'pending' | 'capturing' | 'success' | 'error';
 }
 
+import { supabase } from './supabase';
+
 // All calls go through /api/screenshot serverless proxy (API key stays server-side)
 const SCREENSHOT_PROXY_URL = '/api/screenshot';
 
@@ -29,9 +31,13 @@ const SCREENSHOT_PROXY_URL = '/api/screenshot';
  */
 export async function captureScreenshot(options: ScreenshotOptions): Promise<ScreenshotResult> {
   try {
+    const { data: { session } } = await supabase.auth.getSession();
     const response = await fetch(SCREENSHOT_PROXY_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token ?? ''}`,
+      },
       body: JSON.stringify({
         url: options.url,
         viewportWidth: options.viewportWidth,

@@ -1,5 +1,6 @@
 import type { ClientInput } from '../pages/admin/CaseStudyWizard';
 import type { CaseStudy } from '../data/caseStudies';
+import { supabase } from './supabase';
 
 // All calls go through /api/claude serverless proxy (API key stays server-side)
 const CLAUDE_PROXY_URL = '/api/claude';
@@ -139,9 +140,13 @@ export async function generateCaseStudy(
   };
 
   try {
+    const { data: { session } } = await supabase.auth.getSession();
     const response = await fetch(CLAUDE_PROXY_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token ?? ''}`,
+      },
       body: JSON.stringify(requestBody),
     });
 
