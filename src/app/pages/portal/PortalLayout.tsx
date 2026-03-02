@@ -24,7 +24,7 @@ const navItems = [
   { path: '/portal/project', label: 'Project Details', icon: FileText },
   { path: '/portal/assets', label: 'Assets & Uploads', icon: Upload },
   { path: '/portal/notes', label: 'Project Notes', icon: StickyNote },
-  { path: '/portal/messages', label: 'Messages', icon: MessageSquare, badge: 2 },
+  { path: '/portal/messages', label: 'Messages', icon: MessageSquare },
   { path: '/portal/services', label: 'Add Services', icon: Sparkles },
   { path: '/portal/billing', label: 'Billing', icon: CreditCard },
   { path: '/portal/settings', label: 'Settings', icon: Settings },

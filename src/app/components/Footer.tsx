@@ -27,8 +27,8 @@ export function Footer() {
               <Link to="/pricing" className="block text-zinc-400 hover:text-cyan-400 transition-colors">
                 Pricing
               </Link>
-              <Link to="/design-system" className="block text-zinc-400 hover:text-cyan-400 transition-colors">
-                Design System
+              <Link to="/book-call" className="block text-zinc-400 hover:text-cyan-400 transition-colors">
+                Contact Us
               </Link>
             </div>
           </div>

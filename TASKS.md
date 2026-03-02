@@ -279,8 +279,8 @@
 - [x] Test all marketing pages render (services, pricing, case studies, service details) — all verified, zero console errors
 - [x] Test 404 page for invalid routes — styled 404 with recovery CTAs verified
 - [x] **BUG: Admin portal race condition** — FIXED (Session 19). Added `profileLoading` state to AuthContext + ProtectedRoute waits for profile before role guards. Commit `d9dd9b3`.
-- [ ] **BUG: Messages badge "2" with no messages** — portal sidebar badge count doesn't match actual messages (Low)
-- [ ] **BUG: /design-system exposed in footer** — internal dev page publicly linked (Low)
+- [x] **BUG: Messages badge "2" with no messages** — FIXED: removed hardcoded `badge: 2` from PortalLayout nav item
+- [x] **BUG: /design-system exposed in footer** — FIXED: replaced with "Contact Us" → `/book-call`
 
 ### 8.2 Security Audit (P0) -- MOSTLY COMPLETE
 - [x] Verify no API keys exposed in frontend bundle (removed VITE_CLAUDE_API_KEY, VITE_SCREENSHOT_API_KEY, VITE_ADMIN_PASSWORD)
