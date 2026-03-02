@@ -67,11 +67,12 @@
 - [x] Create payment failure email (customer) — alert, retry instructions, billing portal CTA
 - [x] Wire order confirmation + admin notification to `checkout.session.completed` webhook (fire-and-forget)
 - [x] Wire payment failure email to `invoice.payment_failed` webhook (fire-and-forget)
-- [ ] Create email templates: signup confirmation, password reset, email verification
-- [ ] Create email templates: onboarding reminders, getting-started guide
-- [ ] Create email templates: project updates, milestone notifications
-- [ ] Create email template: monthly report
+- [x] Create email templates: signup confirmation, password reset, email verification, magic link, email change — in `supabase-auth-templates.ts` (paste into Supabase Dashboard > Auth > Email Templates)
+- [x] Create email templates: onboarding reminder, getting-started guide — `onboardingReminderEmail()`, `gettingStartedEmail()`
+- [x] Create email templates: project updates, milestone notifications — `projectUpdateEmail()`
+- [x] Create email template: monthly report — `monthlyReportEmail()`
 - [ ] Wire up Supabase Auth to send emails via Resend (custom SMTP — manual Dashboard config)
+- [ ] Paste auth templates into Supabase Dashboard (signup, password reset, magic link, email change)
 
 ---
 

@@ -204,6 +204,232 @@ export function adminBookingNotificationEmail(data: AdminBookingNotificationData
 
 // -- Payment Failure (customer) --
 
+// -- Getting-Started Guide (sent day after onboarding) --
+
+interface GettingStartedData {
+  clientName: string
+  businessName: string
+  services: string[]
+}
+
+export function gettingStartedEmail(data: GettingStartedData) {
+  const serviceList = data.services.map(s => `<li style="padding: 4px 0;">${s}</li>`).join('')
+
+  const html = baseLayout(`
+  <div style="text-align: center; margin-bottom: 32px;">
+    <h1 style="background: linear-gradient(to right, #22d3ee, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; margin: 0;">
+      Let's Get Started
+    </h1>
+    <p style="color: #a1a1aa; margin-top: 8px;">Hi ${data.clientName}, here's what to expect as we build ${data.businessName}'s online presence.</p>
+  </div>
+
+  <div style="margin: 24px 0;">
+    <h3 style="color: #22d3ee; margin-bottom: 12px;">Your Services</h3>
+    <ul style="padding-left: 20px; color: #e4e4e7; line-height: 1.8;">
+      ${serviceList}
+    </ul>
+  </div>
+
+  <div style="background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.3); border-radius: 12px; padding: 20px; margin: 24px 0;">
+    <h3 style="color: #22d3ee; margin: 0 0 16px;">Your Timeline</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr>
+        <td style="padding: 8px 0; color: #a1a1aa; width: 100px;">Week 1</td>
+        <td style="padding: 8px 0; color: #e4e4e7;">Discovery &amp; strategy — we review your onboarding data and finalize the plan</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 0; color: #a1a1aa;">Week 2–3</td>
+        <td style="padding: 8px 0; color: #e4e4e7;">Design &amp; build phase — first drafts shared for your review</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px 0; color: #a1a1aa;">Week 4</td>
+        <td style="padding: 8px 0; color: #e4e4e7;">Revisions &amp; launch prep — final tweaks and go-live</td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="margin: 24px 0;">
+    <h3 style="color: #e4e4e7; margin-bottom: 12px;">How to Track Progress</h3>
+    <ul style="padding-left: 20px; color: #a1a1aa; line-height: 1.8;">
+      <li>Log into your <a href="https://www.satori-labs.cloud/portal" style="color: #22d3ee; text-decoration: underline;">client portal</a> anytime</li>
+      <li>Check the <strong style="color: #e4e4e7;">Project Details</strong> tab for milestones</li>
+      <li>Upload assets (logo, photos) in the <strong style="color: #e4e4e7;">Assets</strong> tab</li>
+      <li>Leave notes or feedback in <strong style="color: #e4e4e7;">Project Notes</strong></li>
+    </ul>
+  </div>
+
+  <div style="text-align: center; margin-top: 32px;">
+    <a href="https://www.satori-labs.cloud/portal" style="display: inline-block; padding: 14px 32px; background: linear-gradient(to right, #06b6d4, #8b5cf6); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+      Open Your Portal
+    </a>
+    <p style="color: #71717a; font-size: 13px; margin-top: 12px;">Questions? Just reply to this email.</p>
+  </div>`)
+
+  return {
+    subject: `Getting Started — ${data.businessName}`,
+    html,
+  }
+}
+
+// -- Onboarding Reminder (if onboarding not completed within 3 days) --
+
+interface OnboardingReminderData {
+  clientName: string
+  serviceName: string
+}
+
+export function onboardingReminderEmail(data: OnboardingReminderData) {
+  const html = baseLayout(`
+  <div style="text-align: center; margin-bottom: 32px;">
+    <h1 style="background: linear-gradient(to right, #fbbf24, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; margin: 0;">
+      Don't Forget to Complete Setup
+    </h1>
+    <p style="color: #a1a1aa; margin-top: 8px;">Hi ${data.clientName}, you're almost there!</p>
+  </div>
+
+  <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 12px; padding: 20px; margin: 24px 0;">
+    <p style="margin: 0; color: #e4e4e7;">
+      You purchased <strong style="color: #fbbf24;">${data.serviceName}</strong> but haven't finished onboarding yet.
+      Complete it now so we can start working on your project.
+    </p>
+  </div>
+
+  <div style="margin: 24px 0;">
+    <h3 style="color: #e4e4e7; margin-bottom: 12px;">Onboarding takes about 5 minutes:</h3>
+    <ol style="padding-left: 20px; color: #a1a1aa; line-height: 1.8;">
+      <li>Tell us about your business</li>
+      <li>Share your goals and preferences</li>
+      <li>Upload your logo and brand materials (optional)</li>
+      <li>Pick a time for your kickoff call</li>
+    </ol>
+  </div>
+
+  <div style="text-align: center; margin-top: 32px;">
+    <a href="https://www.satori-labs.cloud/onboarding" style="display: inline-block; padding: 14px 32px; background: linear-gradient(to right, #f59e0b, #f97316); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+      Complete Onboarding
+    </a>
+    <p style="color: #71717a; font-size: 13px; margin-top: 12px;">Need help? Reply to this email.</p>
+  </div>`)
+
+  return {
+    subject: `Action Needed — Complete your onboarding for ${data.serviceName}`,
+    html,
+  }
+}
+
+// -- Project Update / Milestone Notification --
+
+interface ProjectUpdateData {
+  clientName: string
+  projectName: string
+  milestoneName: string
+  milestoneStatus: 'completed' | 'in_progress' | 'upcoming'
+  message?: string
+}
+
+export function projectUpdateEmail(data: ProjectUpdateData) {
+  const statusColors = {
+    completed: { bg: 'rgba(34, 197, 94, 0.1)', border: 'rgba(34, 197, 94, 0.3)', text: '#4ade80', label: 'Completed' },
+    in_progress: { bg: 'rgba(34, 211, 238, 0.1)', border: 'rgba(34, 211, 238, 0.3)', text: '#22d3ee', label: 'In Progress' },
+    upcoming: { bg: 'rgba(167, 139, 250, 0.1)', border: 'rgba(167, 139, 250, 0.3)', text: '#a78bfa', label: 'Coming Up' },
+  }
+  const status = statusColors[data.milestoneStatus]
+
+  const html = baseLayout(`
+  <div style="text-align: center; margin-bottom: 32px;">
+    <h1 style="background: linear-gradient(to right, #22d3ee, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; margin: 0;">
+      Project Update
+    </h1>
+    <p style="color: #a1a1aa; margin-top: 8px;">Hi ${data.clientName}, here's the latest on ${data.projectName}.</p>
+  </div>
+
+  <div style="background: ${status.bg}; border: 1px solid ${status.border}; border-radius: 12px; padding: 20px; margin: 24px 0;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr>
+        <td style="padding: 6px 0; color: #a1a1aa;">Milestone</td>
+        <td style="padding: 6px 0; text-align: right; font-weight: 600; color: #e4e4e7;">${data.milestoneName}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 0; color: #a1a1aa;">Status</td>
+        <td style="padding: 6px 0; text-align: right;">
+          <span style="display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; background: ${status.bg}; color: ${status.text}; border: 1px solid ${status.border};">
+            ${status.label}
+          </span>
+        </td>
+      </tr>
+    </table>
+    ${data.message ? `<p style="margin: 16px 0 0; color: #a1a1aa; border-top: 1px solid #27272a; padding-top: 16px;">${data.message}</p>` : ''}
+  </div>
+
+  <div style="text-align: center; margin-top: 32px;">
+    <a href="https://www.satori-labs.cloud/portal/project" style="display: inline-block; padding: 14px 32px; background: linear-gradient(to right, #06b6d4, #8b5cf6); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+      View Project Details
+    </a>
+    <p style="color: #71717a; font-size: 13px; margin-top: 12px;">Track all milestones in your portal</p>
+  </div>`)
+
+  return {
+    subject: `${data.projectName} — ${data.milestoneName} ${status.label}`,
+    html,
+  }
+}
+
+// -- Monthly Report --
+
+interface MonthlyReportData {
+  clientName: string
+  businessName: string
+  month: string
+  kpis: { label: string; value: string; change?: string }[]
+  highlights: string[]
+}
+
+export function monthlyReportEmail(data: MonthlyReportData) {
+  const kpiRows = data.kpis.map(kpi => `
+    <tr>
+      <td style="padding: 8px 0; color: #a1a1aa;">${kpi.label}</td>
+      <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #e4e4e7;">${kpi.value}</td>
+      ${kpi.change ? `<td style="padding: 8px 0; text-align: right; color: ${kpi.change.startsWith('+') ? '#4ade80' : '#f87171'}; font-size: 13px;">${kpi.change}</td>` : '<td></td>'}
+    </tr>`).join('')
+
+  const highlightItems = data.highlights.map(h => `<li style="padding: 4px 0;">${h}</li>`).join('')
+
+  const html = baseLayout(`
+  <div style="text-align: center; margin-bottom: 32px;">
+    <h1 style="background: linear-gradient(to right, #a78bfa, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 28px; margin: 0;">
+      ${data.month} Report
+    </h1>
+    <p style="color: #a1a1aa; margin-top: 8px;">Hi ${data.clientName}, here's how ${data.businessName} performed this month.</p>
+  </div>
+
+  <div style="background: rgba(34, 211, 238, 0.1); border: 1px solid rgba(34, 211, 238, 0.3); border-radius: 12px; padding: 20px; margin: 24px 0;">
+    <h3 style="color: #22d3ee; margin: 0 0 12px;">Key Metrics</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+      ${kpiRows}
+    </table>
+  </div>
+
+  ${data.highlights.length > 0 ? `
+  <div style="margin: 24px 0;">
+    <h3 style="color: #e4e4e7; margin-bottom: 12px;">Highlights</h3>
+    <ul style="padding-left: 20px; color: #a1a1aa; line-height: 1.8;">
+      ${highlightItems}
+    </ul>
+  </div>` : ''}
+
+  <div style="text-align: center; margin-top: 32px;">
+    <a href="https://www.satori-labs.cloud/portal/analytics" style="display: inline-block; padding: 14px 32px; background: linear-gradient(to right, #8b5cf6, #06b6d4); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+      View Full Analytics
+    </a>
+    <p style="color: #71717a; font-size: 13px; margin-top: 12px;">Detailed breakdown available in your portal</p>
+  </div>`)
+
+  return {
+    subject: `${data.month} Performance Report — ${data.businessName}`,
+    html,
+  }
+}
+
 export function paymentFailureEmail(data: PaymentFailureData) {
   const portalUrl = 'https://www.satori-labs.cloud/portal/billing'
 
