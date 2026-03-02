@@ -9,45 +9,55 @@ import { ServicesPage } from './pages/ServicesPage';
 import { PricingPage } from './pages/PricingPage';
 import { CaseStudiesPage } from './pages/CaseStudiesPage';
 import { DesignSystemPage } from './pages/DesignSystemPage';
-import { WebsiteBuildPage } from './pages/services/WebsiteBuildPage';
-import { GoogleBusinessProfilePage } from './pages/services/GoogleBusinessProfilePage';
-import { ReviewScreenerPage } from './pages/services/ReviewScreenerPage';
-import { AIChatBotPage } from './pages/services/AIChatBotPage';
-import { LocalSEOPage } from './pages/services/LocalSEOPage';
-import { GoogleAdsPage } from './pages/services/GoogleAdsPage';
-import { AnalyticsDashboardsPage } from './pages/services/AnalyticsDashboardsPage';
-import { BrandingPage } from './pages/services/BrandingPage';
-import { GraphicDesignPage } from './pages/services/GraphicDesignPage';
-import { CustomCRMPage } from './pages/services/CustomCRMPage';
-import { CheckoutPage } from './pages/checkout/CheckoutPage';
-import { CheckoutSuccessPage } from './pages/checkout/CheckoutSuccessPage';
-import { CreateAccountPage } from './pages/checkout/CreateAccountPage';
-import { OnboardingWizard } from './pages/onboarding/OnboardingWizard';
-import { OnboardingSuccess } from './pages/onboarding/OnboardingSuccess';
-import { PortalLayout } from './pages/portal/PortalLayout';
-import { OverviewPage } from './pages/portal/OverviewPage';
-import { AnalyticsDashboard } from './pages/portal/AnalyticsDashboard';
-import { PageDetailPage } from './pages/portal/analytics/PageDetailPage';
-import { KeywordDetailPage } from './pages/portal/analytics/KeywordDetailPage';
-import { ServicesPage as PortalServicesPage } from './pages/portal/ServicesPage';
-import { ServiceDetailPage } from './pages/portal/ServiceDetailPage';
-import { ProjectPage } from './pages/portal/ProjectPage';
-import { AssetsPage } from './pages/portal/AssetsPage';
-import { NotesPage } from './pages/portal/NotesPage';
-import { MessagesPage } from './pages/portal/MessagesPage';
-import { BillingPage } from './pages/portal/BillingPage';
-import { SettingsPage } from './pages/portal/SettingsPage';
-import { BookCallPage } from './pages/booking/BookCallPage';
-import { ScheduleCallPage } from './pages/booking/ScheduleCallPage';
-import { BookingConfirmation } from './pages/booking/BookingConfirmation';
 import { LoginPage } from './pages/LoginPage';
-import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage';
-import { ResetPasswordPage } from './pages/auth/ResetPasswordPage';
-import { AuthCallbackPage } from './pages/auth/AuthCallbackPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { Navigation } from './components/Navigation';
 import { Footer } from './components/Footer';
 import { AnimatedGalaxyBackground } from './components/AnimatedGalaxyBackground';
+
+// Lazy-loaded service detail pages (individual service pages loaded on demand)
+const WebsiteBuildPage = lazy(() => import('./pages/services/WebsiteBuildPage').then(m => ({ default: m.WebsiteBuildPage })));
+const GoogleBusinessProfilePage = lazy(() => import('./pages/services/GoogleBusinessProfilePage').then(m => ({ default: m.GoogleBusinessProfilePage })));
+const ReviewScreenerPage = lazy(() => import('./pages/services/ReviewScreenerPage').then(m => ({ default: m.ReviewScreenerPage })));
+const AIChatBotPage = lazy(() => import('./pages/services/AIChatBotPage').then(m => ({ default: m.AIChatBotPage })));
+const LocalSEOPage = lazy(() => import('./pages/services/LocalSEOPage').then(m => ({ default: m.LocalSEOPage })));
+const GoogleAdsPage = lazy(() => import('./pages/services/GoogleAdsPage').then(m => ({ default: m.GoogleAdsPage })));
+const AnalyticsDashboardsPage = lazy(() => import('./pages/services/AnalyticsDashboardsPage').then(m => ({ default: m.AnalyticsDashboardsPage })));
+const BrandingPage = lazy(() => import('./pages/services/BrandingPage').then(m => ({ default: m.BrandingPage })));
+const GraphicDesignPage = lazy(() => import('./pages/services/GraphicDesignPage').then(m => ({ default: m.GraphicDesignPage })));
+const CustomCRMPage = lazy(() => import('./pages/services/CustomCRMPage').then(m => ({ default: m.CustomCRMPage })));
+
+// Lazy-loaded checkout/onboarding (only needed in purchase flow)
+const CheckoutPage = lazy(() => import('./pages/checkout/CheckoutPage').then(m => ({ default: m.CheckoutPage })));
+const CheckoutSuccessPage = lazy(() => import('./pages/checkout/CheckoutSuccessPage').then(m => ({ default: m.CheckoutSuccessPage })));
+const CreateAccountPage = lazy(() => import('./pages/checkout/CreateAccountPage').then(m => ({ default: m.CreateAccountPage })));
+const OnboardingWizard = lazy(() => import('./pages/onboarding/OnboardingWizard').then(m => ({ default: m.OnboardingWizard })));
+const OnboardingSuccess = lazy(() => import('./pages/onboarding/OnboardingSuccess').then(m => ({ default: m.OnboardingSuccess })));
+
+// Lazy-loaded portal pages (behind auth — not needed until login)
+const PortalLayout = lazy(() => import('./pages/portal/PortalLayout').then(m => ({ default: m.PortalLayout })));
+const OverviewPage = lazy(() => import('./pages/portal/OverviewPage').then(m => ({ default: m.OverviewPage })));
+const AnalyticsDashboard = lazy(() => import('./pages/portal/AnalyticsDashboard').then(m => ({ default: m.AnalyticsDashboard })));
+const PageDetailPage = lazy(() => import('./pages/portal/analytics/PageDetailPage').then(m => ({ default: m.PageDetailPage })));
+const KeywordDetailPage = lazy(() => import('./pages/portal/analytics/KeywordDetailPage').then(m => ({ default: m.KeywordDetailPage })));
+const PortalServicesPage = lazy(() => import('./pages/portal/ServicesPage').then(m => ({ default: m.ServicesPage })));
+const ServiceDetailPage = lazy(() => import('./pages/portal/ServiceDetailPage').then(m => ({ default: m.ServiceDetailPage })));
+const ProjectPage = lazy(() => import('./pages/portal/ProjectPage').then(m => ({ default: m.ProjectPage })));
+const AssetsPage = lazy(() => import('./pages/portal/AssetsPage').then(m => ({ default: m.AssetsPage })));
+const NotesPage = lazy(() => import('./pages/portal/NotesPage').then(m => ({ default: m.NotesPage })));
+const MessagesPage = lazy(() => import('./pages/portal/MessagesPage').then(m => ({ default: m.MessagesPage })));
+const BillingPage = lazy(() => import('./pages/portal/BillingPage').then(m => ({ default: m.BillingPage })));
+const SettingsPage = lazy(() => import('./pages/portal/SettingsPage').then(m => ({ default: m.SettingsPage })));
+
+// Lazy-loaded auth pages (infrequently visited)
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
+const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
+const AuthCallbackPage = lazy(() => import('./pages/auth/AuthCallbackPage').then(m => ({ default: m.AuthCallbackPage })));
+
+// Lazy-loaded booking pages
+const BookCallPage = lazy(() => import('./pages/booking/BookCallPage').then(m => ({ default: m.BookCallPage })));
+const ScheduleCallPage = lazy(() => import('./pages/booking/ScheduleCallPage').then(m => ({ default: m.ScheduleCallPage })));
+const BookingConfirmation = lazy(() => import('./pages/booking/BookingConfirmation').then(m => ({ default: m.BookingConfirmation })));
 
 // Lazy-loaded admin pages (code-split so marketing pages stay fast)
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
@@ -63,7 +73,7 @@ const AdminBookings = lazy(() => import('./pages/admin/AdminBookings').then(m =>
 const AdminServices = lazy(() => import('./pages/admin/AdminServices').then(m => ({ default: m.AdminServices })));
 const LazyCaseStudyWizard = lazy(() => import('./pages/admin/CaseStudyWizard').then(m => ({ default: m.CaseStudyWizard })));
 
-function AdminLoadingFallback() {
+function PageLoadingFallback() {
   return (
     <div className="min-h-[50vh] flex items-center justify-center">
       <div className="w-10 h-10 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
@@ -102,6 +112,7 @@ function AnimatedRoutes() {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
       >
+        <Suspense fallback={<PageLoadingFallback />}>
         <Routes location={location}>
           <Route path="/" element={<HomePage />} />
           <Route path="/services" element={<ServicesPage />} />
@@ -156,23 +167,24 @@ function AnimatedRoutes() {
           <Route path="/booking/confirmation" element={<BookingConfirmation />} />
 
           {/* Admin Portal (protected, admin only, lazy-loaded) */}
-          <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><Suspense fallback={<AdminLoadingFallback />}><AdminLayout /></Suspense></ProtectedRoute>}>
-            <Route index element={<Suspense fallback={<AdminLoadingFallback />}><AdminOverview /></Suspense>} />
-            <Route path="clients" element={<Suspense fallback={<AdminLoadingFallback />}><AdminClients /></Suspense>} />
-            <Route path="clients/:clientId" element={<Suspense fallback={<AdminLoadingFallback />}><AdminClientDetail /></Suspense>} />
-            <Route path="projects" element={<Suspense fallback={<AdminLoadingFallback />}><AdminProjects /></Suspense>} />
-            <Route path="projects/:projectId" element={<Suspense fallback={<AdminLoadingFallback />}><AdminProjectDetail /></Suspense>} />
-            <Route path="orders" element={<Suspense fallback={<AdminLoadingFallback />}><AdminOrders /></Suspense>} />
-            <Route path="subscriptions" element={<Suspense fallback={<AdminLoadingFallback />}><AdminSubscriptions /></Suspense>} />
-            <Route path="availability" element={<Suspense fallback={<AdminLoadingFallback />}><AdminAvailability /></Suspense>} />
-            <Route path="bookings" element={<Suspense fallback={<AdminLoadingFallback />}><AdminBookings /></Suspense>} />
-            <Route path="services" element={<Suspense fallback={<AdminLoadingFallback />}><AdminServices /></Suspense>} />
-            <Route path="case-study-wizard" element={<Suspense fallback={<AdminLoadingFallback />}><LazyCaseStudyWizard /></Suspense>} />
+          <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><AdminLayout /></ProtectedRoute>}>
+            <Route index element={<AdminOverview />} />
+            <Route path="clients" element={<AdminClients />} />
+            <Route path="clients/:clientId" element={<AdminClientDetail />} />
+            <Route path="projects" element={<AdminProjects />} />
+            <Route path="projects/:projectId" element={<AdminProjectDetail />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="subscriptions" element={<AdminSubscriptions />} />
+            <Route path="availability" element={<AdminAvailability />} />
+            <Route path="bookings" element={<AdminBookings />} />
+            <Route path="services" element={<AdminServices />} />
+            <Route path="case-study-wizard" element={<LazyCaseStudyWizard />} />
           </Route>
 
           {/* 404 Catch-all */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        </Suspense>
       </motion.div>
     </AnimatePresence>
   );

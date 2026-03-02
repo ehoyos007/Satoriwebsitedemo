@@ -1,7 +1,7 @@
 # TASKS.md - Satori Studios Website
 
 > Active task tracking. Organized by phase and priority.
-> Last updated: 2026-03-02 (E2E testing + admin race condition fix)
+> Last updated: 2026-03-01 (Session 21: performance + security hardening)
 
 ---
 
@@ -295,6 +295,9 @@
 - [x] Add auth to /api/claude (Bearer token + admin role verification)
 - [x] Add auth to /api/screenshot (Bearer token + admin role verification)
 - [x] Add security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, HSTS, Permissions-Policy)
+- [x] Stripe webhook idempotency — check existing order before creating duplicate on retry (Session 21)
+- [x] Booking race condition — atomic slot claim with PATCH WHERE is_booked=false (Session 21)
+- [x] Checkout origin hardening — reject unknown origins, removed client-controlled redirect URLs (Session 21)
 
 ### 8.3 Launch (P0)
 - [ ] Final staging environment review
@@ -317,6 +320,6 @@
 - [ ] SMS notifications
 - [ ] Slack integration for internal alerts
 - [ ] Multi-tenant isolation improvements
-- [ ] Performance optimization (code splitting, lazy loading)
+- [x] Performance optimization (code splitting, lazy loading) — Session 21: 1,658KB→279KB main chunk, 33 lazy-loaded pages
 - [ ] A/B testing on landing pages
 - [ ] Referral program system

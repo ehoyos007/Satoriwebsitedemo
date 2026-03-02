@@ -18,10 +18,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const { priceId, serviceSlug, serviceName, customerEmail, successUrl, cancelUrl } = req.body
+    const { priceId, serviceSlug, serviceName, customerEmail } = req.body
 
     if (!priceId || !serviceSlug) {
       return res.status(400).json({ error: 'priceId and serviceSlug are required' })
+    }
+
+    // Validate origin — reject requests from unknown origins
+    const rawOrigin = req.headers.origin || req.headers.referer?.replace(/\/[^/]*$/, '') || ''
+    if (!ALLOWED_ORIGINS.includes(rawOrigin)) {
+      console.warn(`Checkout request from disallowed origin: ${rawOrigin}`)
+      return res.status(403).json({ error: 'Forbidden' })
     }
 
     // Look up the price to determine if it's one-time or recurring
@@ -36,14 +43,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const mode = price.recurring ? 'subscription' : 'payment'
 
     // Build form-encoded body for Stripe Checkout Session
-    const rawOrigin = req.headers.origin || req.headers.referer?.replace(/\/[^/]*$/, '') || ''
-    const origin = ALLOWED_ORIGINS.includes(rawOrigin) ? rawOrigin : 'https://www.satori-labs.cloud'
+    // Success/cancel URLs are always server-controlled — never accept from client
+    const origin = rawOrigin
     const params = new URLSearchParams()
     params.append('mode', mode)
     params.append('line_items[0][price]', priceId)
     params.append('line_items[0][quantity]', '1')
-    params.append('success_url', successUrl || `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`)
-    params.append('cancel_url', cancelUrl || `${origin}/checkout?service=${serviceSlug}&canceled=true`)
+    params.append('success_url', `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`)
+    params.append('cancel_url', `${origin}/checkout?service=${encodeURIComponent(serviceSlug)}&canceled=true`)
     params.append('metadata[service_slug]', serviceSlug)
     params.append('metadata[service_name]', serviceName || '')
     if (customerEmail) {

@@ -7,6 +7,39 @@
 
 ## Session Log
 
+### 2026-03-01 (Session 21) | Performance Optimization & Security Hardening
+
+**Summary:** Split 1.6MB monolithic bundle into 8 optimized chunks (66% initial load reduction), fixed 3 API security/integrity issues.
+
+**Performance Optimization:**
+- Configured Vite manual chunks: vendor-react, vendor-charts, vendor-motion, vendor-radix, vendor-supabase, vendor-icons, vendor-sentry
+- Lazy-loaded all portal pages (12 routes), service detail pages (10), checkout/onboarding (5), booking (3), auth (3)
+- Initial marketing page load: ~558 KB down from 1,658 KB (66% reduction)
+- Main app chunk: 279 KB (73 KB gzip) — no chunk exceeds 500 KB warning threshold except recharts (393 KB, only loaded in portal analytics)
+- Identified dead dependencies: @mui/material, @emotion/react, @emotion/styled (zero imports)
+
+**Security & Data Integrity Fixes:**
+- Stripe webhook idempotency: checks for existing order by `stripe_checkout_session_id` before creating duplicates on retry
+- Booking race condition: replaced read-then-write with atomic `PATCH WHERE is_booked=false` + rollback on failure
+- Checkout origin hardening: rejects unknown origins (403) instead of falling back; removed client-controlled `successUrl`/`cancelUrl` to prevent phishing redirects
+- Webhook failure logging: critical failures now log session ID, email, service, amount for recovery
+
+**Files Changed (5):**
+- `vite.config.ts` — manual chunks config
+- `src/app/App.tsx` — lazy-load 33 page components, single Suspense boundary
+- `api/stripe-webhook.ts` — idempotency check + improved error logging
+- `api/create-booking.ts` — atomic slot claiming with rollback
+- `api/create-checkout-session.ts` — origin validation + removed client-controlled redirect URLs
+
+**What's Left for Launch:**
+1. Create Sentry project → set `VITE_SENTRY_DSN` in Vercel
+2. Switch Stripe to live mode → create live products/prices → update env vars + Supabase price IDs
+3. Paste auth email templates into Supabase Dashboard
+4. Configure Supabase custom SMTP (Resend) for auth emails
+5. Manual testing: Stripe test payment, email delivery, cross-browser, mobile
+
+---
+
 ### 2026-03-01 (Session 20) | Bug Fixes, Security Hardening, Sentry, Email Templates & Launch Checklist
 
 **Summary:** Fixed 2 UI bugs, completed security audit, added Sentry monitoring, created all remaining email templates, and built comprehensive launch checklist.

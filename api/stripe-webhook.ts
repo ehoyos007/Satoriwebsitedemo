@@ -149,8 +149,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }
         }
 
-        // 3. Create order record
+        // 3. Create order record (with idempotency check — Stripe may retry webhooks)
         if (clientId) {
+          const existingOrders = await supabaseAdmin(
+            `orders?stripe_checkout_session_id=eq.${encodeURIComponent(session.id)}&select=id`
+          )
+          if (existingOrders?.[0]) {
+            console.log(`Order already exists for session ${session.id}, skipping duplicate`)
+            break
+          }
+
           const amountCents = session.amount_total || service.setup_price_cents || 0
           await supabaseAdmin('orders', {
             method: 'POST',
@@ -227,7 +235,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
           await Promise.allSettled(emailPromises)
         } else {
-          console.error(`Could not create client or order for ${customerEmail}`)
+          console.error(`CRITICAL: Payment received but no client/order created. Session: ${session.id}, Email: ${customerEmail}, Service: ${serviceSlug}, Amount: ${session.amount_total}`)
         }
 
         break

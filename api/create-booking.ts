@@ -27,22 +27,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // 1. Check slot is still available (race condition guard)
-    const slotResp = await fetch(
-      `${supabaseUrl}/rest/v1/availability_slots?id=eq.${slotId}&select=id,start_time,end_time,is_booked`,
-      { headers }
+    // 1. Atomically claim the slot (UPDATE WHERE is_booked=false prevents race condition)
+    const claimResp = await fetch(
+      `${supabaseUrl}/rest/v1/availability_slots?id=eq.${slotId}&is_booked=eq.false`,
+      {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ is_booked: true }),
+      }
     )
-    const slots = await slotResp.json()
 
-    if (!slots || slots.length === 0) {
-      return res.status(404).json({ error: 'Slot not found' })
+    if (!claimResp.ok) {
+      const text = await claimResp.text()
+      console.error('Failed to claim slot:', text)
+      return res.status(500).json({ error: 'Failed to reserve time slot' })
     }
 
-    if (slots[0].is_booked) {
+    const claimedSlots = await claimResp.json()
+    if (!claimedSlots || claimedSlots.length === 0) {
+      // Either slot doesn't exist or was already booked
+      const checkResp = await fetch(
+        `${supabaseUrl}/rest/v1/availability_slots?id=eq.${slotId}&select=id,is_booked`,
+        { headers }
+      )
+      const checkSlots = await checkResp.json()
+      if (!checkSlots || checkSlots.length === 0) {
+        return res.status(404).json({ error: 'Slot not found' })
+      }
       return res.status(409).json({ error: 'This time slot is no longer available. Please choose another time.' })
     }
 
-    const slot = slots[0]
+    const slot = claimedSlots[0]
 
     // 2. Create booking record
     const bookingResp = await fetch(`${supabaseUrl}/rest/v1/bookings`, {
@@ -60,6 +75,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     })
 
     if (!bookingResp.ok) {
+      // Rollback: un-book the slot since booking creation failed
+      await fetch(
+        `${supabaseUrl}/rest/v1/availability_slots?id=eq.${slotId}`,
+        { method: 'PATCH', headers, body: JSON.stringify({ is_booked: false }) }
+      )
       const text = await bookingResp.text()
       console.error('Failed to create booking:', text)
       return res.status(500).json({ error: 'Failed to create booking' })
@@ -67,16 +87,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const bookings = await bookingResp.json()
     const booking = bookings[0]
-
-    // 3. Mark slot as booked
-    await fetch(
-      `${supabaseUrl}/rest/v1/availability_slots?id=eq.${slotId}`,
-      {
-        method: 'PATCH',
-        headers,
-        body: JSON.stringify({ is_booked: true }),
-      }
-    )
 
     // 4. Send emails (await both before responding — Vercel kills process after response)
     const emailResults = await Promise.allSettled([

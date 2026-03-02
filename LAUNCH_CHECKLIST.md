@@ -116,7 +116,7 @@ Verify all are set for production:
 
 - [x] Admin portal lazy-loaded (code-split from marketing bundle)
 - [x] Build produces optimized chunks
-- [ ] Consider splitting main index.js chunk (1.6MB, could benefit from manual chunks) — post-launch
+- [x] Bundle split: 1,658KB → 279KB main chunk + 7 vendor chunks + 33 lazy-loaded page chunks (Session 21)
 
 ---
 
