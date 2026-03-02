@@ -596,18 +596,23 @@ export function OnboardingWizard() {
           })
         : null;
 
-      fetch('/api/onboarding-complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          clientEmail: formData.businessEmail || user.email,
-          businessName: formData.businessName,
-          clientName: profile?.full_name,
-          clientId,
-          scheduledTime: scheduledTimeFormatted,
-          timezone: formData.timezone,
-          skippedScheduling: !formData.selectedSlotId,
-        }),
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        fetch('/api/onboarding-complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session?.access_token && { 'Authorization': `Bearer ${session.access_token}` }),
+          },
+          body: JSON.stringify({
+            clientEmail: formData.businessEmail || user.email,
+            businessName: formData.businessName,
+            clientName: profile?.full_name,
+            clientId,
+            scheduledTime: scheduledTimeFormatted,
+            timezone: formData.timezone,
+            skippedScheduling: !formData.selectedSlotId,
+          }),
+        });
       }).catch((err) => console.error('Email send failed (non-blocking):', err));
 
       // Navigate to success

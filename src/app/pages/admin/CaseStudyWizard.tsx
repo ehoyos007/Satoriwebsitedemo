@@ -8,9 +8,8 @@ import {
   Edit3,
   Download,
   CheckCircle,
-  Lock,
 } from 'lucide-react';
-import { useReducer, useState } from 'react';
+import { useReducer } from 'react';
 import { InputStep } from './components/InputStep';
 import { ScreenshotStep } from './components/ScreenshotStep';
 import { GenerationStep } from './components/GenerationStep';
@@ -49,7 +48,6 @@ export interface WizardState {
   generationPhase: string | null;
   generationError: string | null;
   caseStudy: Partial<CaseStudy>;
-  isAuthenticated: boolean;
 }
 
 type WizardAction =
@@ -81,7 +79,6 @@ type WizardAction =
   | { type: 'UPDATE_SCREENSHOTS'; updates: Partial<ScreenshotData> }
   | { type: 'NEXT_STEP' }
   | { type: 'PREV_STEP' }
-  | { type: 'AUTHENTICATE' }
   | { type: 'RESET' };
 
 const initialState: WizardState = {
@@ -103,7 +100,6 @@ const initialState: WizardState = {
   generationPhase: null,
   generationError: null,
   caseStudy: {},
-  isAuthenticated: false,
 };
 
 function wizardReducer(state: WizardState, action: WizardAction): WizardState {
@@ -294,10 +290,8 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
       return { ...state, currentStep: Math.min(state.currentStep + 1, 5) };
     case 'PREV_STEP':
       return { ...state, currentStep: Math.max(state.currentStep - 1, 1) };
-    case 'AUTHENTICATE':
-      return { ...state, isAuthenticated: true };
     case 'RESET':
-      return { ...initialState, isAuthenticated: true };
+      return { ...initialState };
     default:
       return state;
   }
@@ -313,21 +307,8 @@ const steps = [
 
 export function CaseStudyWizard() {
   const [state, dispatch] = useReducer(wizardReducer, initialState);
-  const [passwordInput, setPasswordInput] = useState('');
-  const [passwordError, setPasswordError] = useState('');
 
   const totalSteps = 5;
-
-  const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD || 'satori-admin';
-    if (passwordInput === adminPassword) {
-      dispatch({ type: 'AUTHENTICATE' });
-      setPasswordError('');
-    } else {
-      setPasswordError('Incorrect password');
-    }
-  };
 
   const handleNext = () => {
     if (state.currentStep === 1) {
@@ -358,51 +339,6 @@ export function CaseStudyWizard() {
     }
     return true;
   };
-
-  // Admin gate
-  if (!state.isAuthenticated) {
-    return (
-      <div className="min-h-screen pt-16 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="glass-panel p-8 rounded-2xl border border-white/10 max-w-md w-full mx-4"
-        >
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 flex items-center justify-center mx-auto mb-4">
-              <Lock className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-2xl mb-2">Admin Access Required</h1>
-            <p className="text-zinc-400 text-sm">
-              Enter the admin password to access the Case Study Wizard
-            </p>
-          </div>
-
-          <form onSubmit={handlePasswordSubmit}>
-            <div className="mb-4">
-              <input
-                type="password"
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                className="w-full px-4 py-3 bg-zinc-900/50 border border-white/10 rounded-lg focus:border-cyan-400/50 focus:outline-none focus:ring-2 focus:ring-cyan-400/20"
-                placeholder="Enter password"
-                autoFocus
-              />
-              {passwordError && (
-                <p className="text-red-400 text-sm mt-2">{passwordError}</p>
-              )}
-            </div>
-            <button
-              type="submit"
-              className="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-cyan-500 to-violet-500 text-white hover:scale-105 transition-transform"
-            >
-              Access Wizard
-            </button>
-          </form>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen pt-16">

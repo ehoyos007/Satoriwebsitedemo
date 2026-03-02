@@ -8,10 +8,40 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const resendApiKey = process.env.RESEND_API_KEY
   const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL
   const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@satori-labs.cloud'
+  const supabaseUrl = process.env.VITE_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!resendApiKey) {
     console.error('Missing RESEND_API_KEY')
     return res.status(500).json({ error: 'Email service not configured' })
+  }
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('Missing Supabase env vars')
+    return res.status(500).json({ error: 'Server configuration error' })
+  }
+
+  // Verify auth
+  const authHeader = req.headers.authorization
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing authorization token' })
+  }
+  const token = authHeader.slice(7)
+
+  let userId: string
+  try {
+    const userResp = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: {
+        'apikey': supabaseServiceKey,
+        'Authorization': `Bearer ${token}`,
+      },
+    })
+    if (!userResp.ok) {
+      return res.status(401).json({ error: 'Invalid or expired token' })
+    }
+    const user = await userResp.json()
+    userId = user.id
+  } catch {
+    return res.status(401).json({ error: 'Auth verification failed' })
   }
 
   const {
@@ -26,6 +56,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (!clientEmail) {
     return res.status(400).json({ error: 'clientEmail is required' })
+  }
+
+  // Verify the user owns this client record
+  if (clientId) {
+    const clientResp = await fetch(
+      `${supabaseUrl}/rest/v1/clients?id=eq.${encodeURIComponent(clientId)}&user_id=eq.${userId}&select=id`,
+      {
+        headers: {
+          'apikey': supabaseServiceKey,
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+        },
+      }
+    )
+    if (!clientResp.ok) {
+      return res.status(500).json({ error: 'Failed to verify client ownership' })
+    }
+    const clients = await clientResp.json()
+    if (!clients?.length) {
+      return res.status(403).json({ error: 'You do not have access to this client record' })
+    }
   }
 
   const portalUrl = 'https://www.satori-labs.cloud/portal'

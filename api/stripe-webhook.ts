@@ -30,22 +30,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Server configuration error' })
   }
 
+  if (!webhookSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET is not configured — rejecting webhook')
+    return res.status(500).json({ error: 'Webhook signature verification not configured' })
+  }
+
   const buf = await buffer(req)
   let event: any
 
-  // Verify webhook signature if secret is configured
-  if (webhookSecret) {
-    const stripe = new Stripe(stripeSecret)
-    const sig = req.headers['stripe-signature'] as string
-    try {
-      event = stripe.webhooks.constructEvent(buf, sig, webhookSecret)
-    } catch (err) {
-      console.error('Webhook signature verification failed:', err)
-      return res.status(400).json({ error: 'Invalid signature' })
-    }
-  } else {
-    event = JSON.parse(buf.toString())
-    console.warn('Webhook signature verification disabled (no STRIPE_WEBHOOK_SECRET)')
+  const stripe = new Stripe(stripeSecret)
+  const sig = req.headers['stripe-signature'] as string
+  try {
+    event = stripe.webhooks.constructEvent(buf, sig, webhookSecret)
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err)
+    return res.status(400).json({ error: 'Invalid signature' })
   }
 
   // Helper to call Supabase REST API with service role key
@@ -87,7 +86,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // 1. Look up the service
-        const services = await supabaseAdmin(`services?slug=eq.${serviceSlug}&select=id,name,setup_price_cents,monthly_price_cents`)
+        const services = await supabaseAdmin(`services?slug=eq.${encodeURIComponent(serviceSlug)}&select=id,name,setup_price_cents,monthly_price_cents`)
         const service = services?.[0]
         if (!service) {
           console.error(`Service not found: ${serviceSlug}`)
@@ -243,7 +242,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const customerId = typeof subscription.customer === 'string'
           ? subscription.customer
           : subscription.customer
-        const clients = await supabaseAdmin(`clients?stripe_customer_id=eq.${customerId}&select=id`)
+        const clients = await supabaseAdmin(`clients?stripe_customer_id=eq.${encodeURIComponent(customerId)}&select=id`)
         const client = clients?.[0]
         if (!client) {
           console.warn(`No client found for Stripe customer ${customerId}`)
@@ -253,7 +252,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Get the price to find the service
         const priceId = subscription.items?.data?.[0]?.price?.id
         if (priceId) {
-          const services = await supabaseAdmin(`services?stripe_monthly_price_id=eq.${priceId}&select=id,name`)
+          const services = await supabaseAdmin(`services?stripe_monthly_price_id=eq.${encodeURIComponent(priceId)}&select=id,name`)
           const service = services?.[0]
           if (service) {
             // Get period from subscription items
@@ -274,7 +273,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
 
             // Check if subscription already exists
-            const existing = await supabaseAdmin(`subscriptions?stripe_subscription_id=eq.${subscription.id}&select=id`)
+            const existing = await supabaseAdmin(`subscriptions?stripe_subscription_id=eq.${encodeURIComponent(subscription.id)}&select=id`)
             if (existing?.[0]) {
               await supabaseAdmin(`subscriptions?id=eq.${existing[0].id}`, {
                 method: 'PATCH',
@@ -296,7 +295,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const subscription = event.data.object
         console.log(`Subscription cancelled: ${subscription.id}`)
 
-        await supabaseAdmin(`subscriptions?stripe_subscription_id=eq.${subscription.id}`, {
+        await supabaseAdmin(`subscriptions?stripe_subscription_id=eq.${encodeURIComponent(subscription.id)}`, {
           method: 'PATCH',
           body: JSON.stringify({
             status: 'cancelled',
@@ -316,7 +315,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           const subId = typeof subDetails.subscription === 'string'
             ? subDetails.subscription
             : subDetails.subscription.id
-          await supabaseAdmin(`subscriptions?stripe_subscription_id=eq.${subId}`, {
+          await supabaseAdmin(`subscriptions?stripe_subscription_id=eq.${encodeURIComponent(subId)}`, {
             method: 'PATCH',
             body: JSON.stringify({ status: 'past_due' }),
           })
@@ -328,7 +327,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           if (customerId) {
             // Look up client email and service name
             const subs = await supabaseAdmin(
-              `subscriptions?stripe_subscription_id=eq.${subId}&select=client_id,service:services(name)`
+              `subscriptions?stripe_subscription_id=eq.${encodeURIComponent(subId)}&select=client_id,service:services(name)`
             )
             const sub = subs?.[0]
             if (sub?.client_id) {

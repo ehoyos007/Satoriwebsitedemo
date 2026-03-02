@@ -1,5 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
+const ALLOWED_ORIGINS = [
+  'https://www.satori-labs.cloud',
+  'https://satori-labs.cloud',
+  'http://localhost:5173',
+  'http://localhost:3000',
+]
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -29,7 +36,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const mode = price.recurring ? 'subscription' : 'payment'
 
     // Build form-encoded body for Stripe Checkout Session
-    const origin = req.headers.origin || req.headers.referer?.replace(/\/[^/]*$/, '') || 'https://www.satori-labs.cloud'
+    const rawOrigin = req.headers.origin || req.headers.referer?.replace(/\/[^/]*$/, '') || ''
+    const origin = ALLOWED_ORIGINS.includes(rawOrigin) ? rawOrigin : 'https://www.satori-labs.cloud'
     const params = new URLSearchParams()
     params.append('mode', mode)
     params.append('line_items[0][price]', priceId)

@@ -90,9 +90,13 @@ export function BillingPage() {
     setPortalLoading(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await retryFetch('/api/create-portal-session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token && { 'Authorization': `Bearer ${session.access_token}` }),
+        },
         body: JSON.stringify({ stripeCustomerId: client.stripe_customer_id }),
       });
 

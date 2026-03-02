@@ -21,43 +21,32 @@ export interface CaptureProgress {
   mobile: 'pending' | 'capturing' | 'success' | 'error';
 }
 
-const SCREENSHOT_API_BASE = 'https://api.screenshotone.com/take';
+// All calls go through /api/screenshot serverless proxy (API key stays server-side)
+const SCREENSHOT_PROXY_URL = '/api/screenshot';
 
 /**
- * Capture a screenshot of a website using ScreenshotOne API
+ * Capture a screenshot of a website via server-side proxy
  */
 export async function captureScreenshot(options: ScreenshotOptions): Promise<ScreenshotResult> {
-  const apiKey = import.meta.env.VITE_SCREENSHOT_API_KEY;
-
-  if (!apiKey) {
-    return {
-      success: false,
-      error: 'Screenshot API key not configured. Please set VITE_SCREENSHOT_API_KEY in .env.local',
-    };
-  }
-
   try {
-    // Build URL with query parameters
-    const params = new URLSearchParams({
-      access_key: apiKey,
-      url: options.url,
-      viewport_width: options.viewportWidth.toString(),
-      viewport_height: options.viewportHeight.toString(),
-      format: options.format || 'png',
-      full_page: (options.fullPage ?? false).toString(),
-      delay: (options.delay ?? 2).toString(), // Wait 2 seconds for page load
-      block_ads: 'true',
-      block_cookie_banners: 'true',
-      block_trackers: 'true',
+    const response = await fetch(SCREENSHOT_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        url: options.url,
+        viewportWidth: options.viewportWidth,
+        viewportHeight: options.viewportHeight,
+        format: options.format || 'png',
+        fullPage: options.fullPage ?? false,
+        delay: options.delay ?? 2,
+      }),
     });
 
-    const response = await fetch(`${SCREENSHOT_API_BASE}?${params.toString()}`);
-
     if (!response.ok) {
-      const errorText = await response.text();
+      const errorData = await response.json().catch(() => ({ error: `Screenshot failed: ${response.status}` }));
       return {
         success: false,
-        error: `Screenshot failed: ${response.status} - ${errorText}`,
+        error: errorData.error || `Screenshot failed: ${response.status}`,
       };
     }
 
