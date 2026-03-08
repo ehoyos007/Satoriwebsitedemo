@@ -98,9 +98,31 @@ function getSubject(actionType: string, source: string): string {
   }
 }
 
+// Disable Vercel body parsing so we get the raw body for signature verification
+export const config = { api: { bodyParser: false } }
+
+function readRawBody(req: VercelRequest): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = []
+    req.on('data', (chunk: Buffer) => chunks.push(chunk))
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
+    req.on('error', reject)
+  })
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  // Read raw body for signature verification
+  const rawBody = await readRawBody(req)
+  let payload: HookPayload
+
+  try {
+    payload = JSON.parse(rawBody)
+  } catch {
+    return res.status(400).json({ error: 'Invalid JSON' })
   }
 
   // Verify Standard Webhooks signature (HMAC-SHA256)
@@ -123,19 +145,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(401).json({ error: 'Unauthorized' })
     }
 
-    // Compute expected signature
+    // Compute expected signature using raw body (exact bytes Supabase signed)
     const secretBytes = Buffer.from(hookSecret.replace('whsec_', ''), 'base64')
-    const body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body)
-    const signedContent = `${msgId}.${timestamp}.${body}`
+    const signedContent = `${msgId}.${timestamp}.${rawBody}`
     const expectedSig = crypto.createHmac('sha256', secretBytes).update(signedContent).digest('base64')
 
     // Verify against any of the provided signatures
     const valid = signatures.split(' ').some(sig => {
       const sigValue = sig.replace(/^v1,/, '')
-      return crypto.timingSafeEqual(
-        Buffer.from(expectedSig),
-        Buffer.from(sigValue),
-      )
+      const expected = Buffer.from(expectedSig)
+      const received = Buffer.from(sigValue)
+      if (expected.length !== received.length) return false
+      return crypto.timingSafeEqual(expected, received)
     })
 
     if (!valid) {
@@ -143,8 +164,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(401).json({ error: 'Unauthorized' })
     }
   }
-
-  const payload = req.body as HookPayload
 
   if (!payload?.user?.email || !payload?.email_data) {
     console.error('auth-email-hook: invalid payload', JSON.stringify(payload).slice(0, 200))
