@@ -24,13 +24,13 @@ import {
   oaPasswordReset,
   oaMagicLink,
   oaEmailChange,
-} from './_lib/oa-auth-templates'
+} from './_lib/oa-auth-templates.js'
 import {
   satoriSignupConfirmation,
   satoriPasswordReset,
   satoriMagicLink,
   satoriEmailChange,
-} from './_lib/satori-auth-templates'
+} from './_lib/satori-auth-templates.js'
 
 const SUPABASE_URL = 'https://cbeurhcgvqptclggkbhb.supabase.co'
 const SIGNATURE_TOLERANCE_SECS = 300 // 5 minutes
