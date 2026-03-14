@@ -1,3 +1,15 @@
+## Repository & Deployment
+
+| Field | Value |
+|-------|-------|
+| **Git Owner** | PureProfit-Marketing-Group |
+| **Git Remote** | https://github.com/PureProfit-Marketing-Group/Satoriwebsitedemo |
+| **Vercel Team** | enzo-hoyos-projects |
+| **Vercel Project** | satoriwebsitedemo |
+| **Production URL** | https://www.satori-labs.cloud |
+
+> When creating new repos or deployments, always confirm which organization/team they belong to.
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
